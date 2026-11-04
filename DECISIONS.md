@@ -115,3 +115,12 @@ considered, why.
   which is the best case for caching. The automatic form needs no block
   bookkeeping and keeps the provider code short. Without separate cache
   accounting, cost reports would be overstated by up to 20x on cached tokens.
+
+## D13. Retries are delegated to the SDK
+- **Decision:** `AnthropicProvider` passes `max_retries=5` and a 600 s timeout
+  to the SDK client; there is no retry wrapper of our own.
+- **Alternatives:** a provider-agnostic `RetryingProvider` with hand-written
+  exponential backoff.
+- **Why:** the SDK already implements backoff with jitter and honours
+  `retry-after`. A second layer would multiply retries (5 x 5) and wait times.
+  Mock providers never fail transiently, so nothing else needs retries.

@@ -75,12 +75,18 @@ class AnthropicProvider:
         effort: str = "high",
         server_fallback: bool = True,
         prompt_caching: bool = True,
+        max_retries: int = 5,
+        timeout_seconds: float = 600.0,
         client: Any = None,
     ) -> None:
         if client is None:
             import anthropic  # imported lazily: mock mode must not need the SDK
 
-            client = anthropic.Anthropic()  # reads ANTHROPIC_API_KEY
+            # The SDK retries rate limits (429), overload and server errors (5xx),
+            # timeouts and dropped connections with exponential backoff and jitter,
+            # honouring retry-after headers. We only choose how hard it tries.
+            # Errors that survive the retries end the run as `provider_error`.
+            client = anthropic.Anthropic(max_retries=max_retries, timeout=timeout_seconds)
         self.client = client
         self.model = model
         self.max_tokens = max_tokens

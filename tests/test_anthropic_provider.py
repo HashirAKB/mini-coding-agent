@@ -118,3 +118,18 @@ def test_caching_can_be_switched_off() -> None:
     client = FakeClient(FakeResponse([FakeBlock({"type": "text", "text": "ok"})], "end_turn"))
     AnthropicProvider(client=client, prompt_caching=False).complete("s", [], [])
     assert "cache_control" not in client.messages.requests[0]
+
+
+def test_sdk_client_gets_retry_and_timeout_settings(monkeypatch: Any) -> None:
+    import sys
+    import types
+
+    created: dict[str, Any] = {}
+
+    class FakeAnthropic:
+        def __init__(self, **kwargs: Any) -> None:
+            created.update(kwargs)
+
+    monkeypatch.setitem(sys.modules, "anthropic", types.SimpleNamespace(Anthropic=FakeAnthropic))
+    AnthropicProvider(max_retries=7, timeout_seconds=42.0)
+    assert created == {"max_retries": 7, "timeout": 42.0}
