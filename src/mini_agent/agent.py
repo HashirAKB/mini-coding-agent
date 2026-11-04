@@ -16,7 +16,13 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
-from mini_agent.context import estimate_request_tokens
+from mini_agent.context import (
+    DEFAULT_HINT,
+    TRUNCATION_HINTS,
+    estimate_request_tokens,
+    summarise_history,
+    truncate_output,
+)
 from mini_agent.prompts import PLAN_ACK, STRATEGIES, task_prompt
 from mini_agent.providers.base import Provider
 from mini_agent.tools import TOOL_SPECS, ToolBox
@@ -31,6 +37,10 @@ class AgentConfig:
     max_steps: int = 30
     max_total_tokens: int = 400_000  # input + output, summed over all model calls
     strategy: str = "direct"  # "direct" or "plan"
+    context_limit_tokens: int = 100_000  # our working budget for one request
+    summarise_at: float = 0.75  # summarise old turns above this share of the limit
+    keep_recent_turns: int = 4  # assistant turns kept verbatim when summarising
+    max_observation_chars: int = 8_000  # longer tool outputs are truncated
 
 
 @dataclass
@@ -97,7 +107,7 @@ class Agent:
             if usage.total >= self.config.max_total_tokens:
                 return stop("token_budget", step - 1)
 
-            context_tokens = estimate_request_tokens(self.system, messages, TOOL_SPECS)
+            context_tokens = self._manage_context(step, messages)
             response = self.provider.complete(self.system, messages, TOOL_SPECS)
             usage.input_tokens += response.usage.input_tokens
             usage.output_tokens += response.usage.output_tokens
@@ -116,6 +126,9 @@ class Agent:
             finish_args: dict[str, Any] | None = None
             for call in response.tool_calls:
                 result = self.toolbox.execute(call)
+                hint = TRUNCATION_HINTS.get(call.name, DEFAULT_HINT)
+                limit = self.config.max_observation_chars
+                result.output = truncate_output(result.output, limit, hint)
                 results.append(result)
                 if call.name == "finish" and not result.is_error:
                     finish_args = call.args
@@ -127,6 +140,26 @@ class Agent:
             messages.append(Message("user", tool_results=results))
 
         return stop("max_steps", self.config.max_steps)
+
+    def _manage_context(self, step: int, messages: list[Message]) -> int:
+        """Summarise old turns if the next request would be too big. Returns its size."""
+        tokens = estimate_request_tokens(self.system, messages, TOOL_SPECS)
+        if tokens <= self.config.context_limit_tokens * self.config.summarise_at:
+            return tokens
+        summarised = summarise_history(messages, self.config.keep_recent_turns)
+        if summarised is messages:
+            return tokens  # nothing old enough to summarise
+        messages[:] = summarised
+        after = estimate_request_tokens(self.system, messages, TOOL_SPECS)
+        self._record(
+            {
+                "type": "context_summarised",
+                "step": step,
+                "tokens_before": tokens,
+                "tokens_after": after,
+            }
+        )
+        return after
 
     def _record_step(
         self,

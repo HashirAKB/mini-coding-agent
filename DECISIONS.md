@@ -54,3 +54,17 @@ considered, why.
 - **Why:** recommended default for current Claude models; a false-positive
   refusal on a harmless coding task would otherwise be scored as a failure of
   the agent. Not verifiable offline, listed as a known gap.
+
+## D7. Extractive keep-tail summarisation, thinking stripped from kept turns
+- **Decision:** when the estimated request size passes 75% of the context
+  budget, old turns are replaced by a rule-based digest (one line per tool call
+  with ok/error and the first line of its output) appended to the task
+  message. The last 4 assistant turns are kept verbatim minus their thinking
+  blocks.
+- **Alternatives:** ask the model to write the summary; "simple compaction"
+  (summary only, keep nothing); server-side compaction.
+- **Why:** deterministic and testable offline, costs no tokens, and keeps the
+  most recent observations exact (the agent usually needs the last file it
+  read). Stripping thinking blocks from kept turns is required because the API
+  rejects thinking blocks whose preceding history was edited. An LLM-written
+  summary is listed under "What I'd do next".
