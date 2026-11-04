@@ -84,7 +84,9 @@ def _render_step(event: dict[str, Any]) -> str:
     parts = [
         f"<section class='step'><h2>Step {event['step']}</h2>",
         f"<p class='meta'>context estimate {event['context_tokens_estimate']:,} tokens; "
-        f"usage in/out {usage['input_tokens']:,}/{usage['output_tokens']:,}</p>",
+        f"usage in/out {usage['input_tokens']:,}/{usage['output_tokens']:,}; "
+        f"model {event.get('model_seconds', 0):.2f}s, "
+        f"tools {event.get('tool_seconds', 0):.2f}s</p>",
     ]
     if event["text"]:
         parts.append(f"<p class='thought'>{escape(event['text'])}</p>")

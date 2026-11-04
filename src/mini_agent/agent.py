@@ -13,6 +13,7 @@ bounded or measurable.
 
 from __future__ import annotations
 
+import time
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
@@ -53,6 +54,8 @@ class AgentResult:
     finish_status: str | None = None
     finish_summary: str = ""
     messages: list[Message] = field(default_factory=list)
+    model_seconds: float = 0.0  # time spent waiting for the provider
+    tool_seconds: float = 0.0  # time spent running tools
 
 
 class Agent:
@@ -100,28 +103,35 @@ class Agent:
         return result
 
     def _loop(self, messages: list[Message], usage: Usage) -> AgentResult:
+        timings = {"model": 0.0, "tools": 0.0}
+
         def stop(
             reason: str, step: int, status: str | None = None, summary: str = ""
         ) -> AgentResult:
-            return AgentResult(reason, step, usage, status, summary, messages)
+            return AgentResult(
+                reason, step, usage, status, summary, messages, timings["model"], timings["tools"]
+            )
 
         for step in range(1, self.config.max_steps + 1):
             if usage.total >= self.config.max_total_tokens:
                 return stop("token_budget", step - 1)
 
             context_tokens = self._manage_context(step, messages, usage)
+            started = time.perf_counter()
             try:
                 response = self.provider.complete(self.system, messages, TOOL_SPECS)
             except Exception as error:  # network, rate limit, bad request, exhausted replay
                 # One failed call should end this run, not the whole benchmark.
                 return stop("provider_error", step - 1, None, f"{type(error).__name__}: {error}")
+            model_seconds = time.perf_counter() - started
+            timings["model"] += model_seconds
             usage.add(response.usage)
             messages.append(
                 Message("assistant", response.text, response.tool_calls, raw=response.raw)
             )
 
             if not response.tool_calls:
-                self._record_step(step, context_tokens, response, [])
+                self._record_step(step, context_tokens, response, [], model_seconds, 0.0)
                 if self.config.strategy == "plan" and step == 1:
                     messages.append(Message("user", text=PLAN_ACK))  # the plan turn
                     continue
@@ -129,6 +139,7 @@ class Agent:
 
             results: list[ToolResult] = []
             finish_args: dict[str, Any] | None = None
+            started = time.perf_counter()
             for call in response.tool_calls:
                 result = self.toolbox.execute(call)
                 hint = TRUNCATION_HINTS.get(call.name, DEFAULT_HINT)
@@ -137,7 +148,9 @@ class Agent:
                 results.append(result)
                 if call.name == "finish" and not result.is_error:
                     finish_args = call.args
-            self._record_step(step, context_tokens, response, results)
+            tool_seconds = time.perf_counter() - started
+            timings["tools"] += tool_seconds
+            self._record_step(step, context_tokens, response, results, model_seconds, tool_seconds)
 
             if finish_args is not None:
                 reason = "finished" if finish_args["status"] == "done" else "gave_up"
@@ -191,6 +204,8 @@ class Agent:
         context_tokens: int,
         response: ModelResponse,
         results: list[ToolResult],
+        model_seconds: float,
+        tool_seconds: float,
     ) -> None:
         self._record(
             {
@@ -202,6 +217,8 @@ class Agent:
                 "observations": [asdict(result) for result in results],
                 "usage": asdict(response.usage),
                 "model_stop_reason": response.stop_reason,
+                "model_seconds": model_seconds,
+                "tool_seconds": tool_seconds,
                 "raw": response.raw,
             }
         )

@@ -20,7 +20,7 @@ commit is pushed.
 - [x] Parallel task execution (`--workers`)
 - [x] Optional model-written summaries with extractive fallback
 - [x] CI check that committed mock results are up to date
-- [ ] Per-step timing: model latency vs tool time
+- [x] Per-step timing: model latency vs tool time
 - [ ] Optional Docker sandbox for `run_tests`
 - [ ] Run the live benchmark and commit results (blocked, see below)
 

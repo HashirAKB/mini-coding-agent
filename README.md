@@ -175,6 +175,9 @@ Each has a longer write-up in [`docs/adr/`](docs/adr) and
   reruns the mock benchmark and fails if anything other than wall time differs
   from the committed `results.json`, so the numbers in this README cannot go
   stale silently.
+- **Time is split into model and tools.** Every step records how long the
+  model call and the tool calls took, and results report averages per
+  strategy, so a slow run can be attributed to API latency or to slow tests.
 - **Mock is the default provider everywhere.** Live runs need an explicit flag,
   so nobody spends money by accident.
 
@@ -194,10 +197,9 @@ Each has a longer write-up in [`docs/adr/`](docs/adr) and
 
 ## What I'd do next
 
-1. Per-step timing that separates model latency from tool time.
-2. An optional Docker sandbox for `run_tests`, so agent-written code never runs
+1. An optional Docker sandbox for `run_tests`, so agent-written code never runs
    on the host.
-3. Run the live benchmark for both strategies and commit the results.
+2. Run the live benchmark for both strategies and commit the results.
 
 ## Project layout
 

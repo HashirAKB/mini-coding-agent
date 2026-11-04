@@ -97,7 +97,9 @@ class TaskResult:
     output_tokens: int
     cache_read_tokens: int
     cost_usd: float
-    wall_seconds: float
+    wall_seconds: float  # whole agent run
+    model_seconds: float  # part of wall_seconds spent waiting for the model
+    tool_seconds: float  # part of wall_seconds spent running tools
     changed_files: list[str]
 
 
@@ -264,6 +266,8 @@ def run_task(
         cache_read_tokens=result.usage.cache_read_tokens,
         cost_usd=cost_usd(provider.model, result.usage),
         wall_seconds=wall_seconds,
+        model_seconds=result.model_seconds,
+        tool_seconds=result.tool_seconds,
         changed_files=sorted(changed),
     )
 
@@ -306,6 +310,8 @@ def summarise_results(results: list[TaskResult]) -> dict[str, dict[str, Any]]:
             "avg_tokens": sum(tokens) / n,
             "total_cost_usd": sum(r.cost_usd for r in runs),
             "avg_wall_seconds": sum(r.wall_seconds for r in runs) / n,
+            "avg_model_seconds": sum(r.model_seconds for r in runs) / n,
+            "avg_tool_seconds": sum(r.tool_seconds for r in runs) / n,
             "failures": dict(Counter(r.failure for r in runs if r.failure)),
         }
     return summary
@@ -320,8 +326,8 @@ def render_markdown(
         "## Summary",
         "",
         "| strategy | pass@1 | pass@k | avg steps | total tokens | avg tokens | cost (USD) "
-        "| avg wall (s) |",
-        "|---|---|---|---|---|---|---|---|",
+        "| avg wall (s) | avg model (s) | avg tools (s) |",
+        "|---|---|---|---|---|---|---|---|---|---|",
     ]
     for strategy, s in summary.items():
         k = str(s["samples_per_task"])
@@ -329,7 +335,8 @@ def render_markdown(
             f"| {strategy} | {s['passed']}/{s['runs']} ({s['pass_at_1']:.0%}) "
             f"| pass@{k} {s['pass_at_k'][k]:.0%} | {s['avg_steps']:.1f} "
             f"| {s['total_tokens']:,} | {s['avg_tokens']:,.0f} "
-            f"| {s['total_cost_usd']:.2f} | {s['avg_wall_seconds']:.2f} |"
+            f"| {s['total_cost_usd']:.2f} | {s['avg_wall_seconds']:.2f} "
+            f"| {s['avg_model_seconds']:.2f} | {s['avg_tool_seconds']:.2f} |"
         )
     lines += ["", "## Failure taxonomy", "", "| category | " + " | ".join(summary) + " |"]
     lines.append("|---|" + "---|" * len(summary))
@@ -353,7 +360,14 @@ def render_markdown(
     return "\n".join(lines) + "\n"
 
 
-TIMING_KEYS = {"wall_seconds", "avg_wall_seconds"}
+TIMING_KEYS = {
+    "wall_seconds",
+    "model_seconds",
+    "tool_seconds",
+    "avg_wall_seconds",
+    "avg_model_seconds",
+    "avg_tool_seconds",
+}
 
 
 def compare_results(expected: Any, actual: Any, path: str = "") -> list[str]:

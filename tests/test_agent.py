@@ -133,3 +133,23 @@ def test_provider_errors_end_the_run_instead_of_crashing(
     assert result.stop_reason == "provider_error"
     assert "ConnectionError: API unreachable" in result.finish_summary
     assert read_trajectory(path)[-1]["stop_reason"] == "provider_error"
+
+
+class SlowProvider(FixedProvider):
+    def complete(self, system: str, messages: list[Message], tools: object) -> ModelResponse:
+        import time
+
+        time.sleep(0.05)
+        return super().complete(system, messages, tools)
+
+
+def test_steps_record_model_and_tool_time(tmp_path: Path, workspace: Workspace) -> None:
+    run_tests = ModelResponse("", [ToolCall("c", "run_tests", {})], Usage(1, 1))
+    path = tmp_path / "run.jsonl"
+    with TrajectoryWriter(path) as writer:
+        agent = Agent(SlowProvider(run_tests), ToolBox(workspace), AgentConfig(max_steps=2), writer)  # type: ignore[arg-type]
+        result = agent.run(TASK)
+    steps = [e for e in read_trajectory(path) if e["type"] == "step"]
+    assert all(s["model_seconds"] >= 0.05 and s["tool_seconds"] > 0 for s in steps)
+    assert result.model_seconds == sum(s["model_seconds"] for s in steps)
+    assert result.tool_seconds == sum(s["tool_seconds"] for s in steps)
