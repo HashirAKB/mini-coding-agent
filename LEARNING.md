@@ -146,7 +146,8 @@ Read in this order; each file builds on the previous ones.
 | 1 | `src/mini_agent/types.py` | The neutral data model: `Message`, `ToolCall`, `ToolResult`, `ModelResponse`, `Usage`. Why `raw` exists. |
 | 2 | `src/mini_agent/workspace.py` | Path confinement in 10 lines: resolve, then `is_relative_to`. Why resolving first defeats `..` and symlinks. |
 | 3 | `src/mini_agent/patch.py` | The unified diff format, tolerant parsing, exact matching, all-or-nothing writes, model-facing error messages. |
-| 4 | `src/mini_agent/tools.py` | Tool schemas, argument validation, bounded outputs, subprocess timeouts, errors as observations. |
+| 4 | `src/mini_agent/tools.py` | Tool schemas, argument validation, bounded outputs, errors as observations. |
+| 4b | `src/mini_agent/sandbox.py` | Running untrusted code: subprocess timeouts, and the optional `docker run --network none` sandbox (and why a timed-out container must be killed by name). |
 | 5 | `src/mini_agent/prompts.py` | The two strategies and why the system prompt never changes mid-run. |
 | 6 | `src/mini_agent/providers/base.py` | The one-method `Provider` protocol. |
 | 7 | `src/mini_agent/agent.py` | The loop, the stop conditions, where context management and truncation plug in. |

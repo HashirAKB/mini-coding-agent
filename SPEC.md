@@ -65,6 +65,7 @@ src/mini_agent/
   workspace.py    Workspace: path confinement (resolve + is_relative_to)
   patch.py        Unified diff parser and all-or-nothing applier
   tools.py        Tool specs (JSON schema) + implementations + dispatcher
+  sandbox.py      Runs pytest on the host or in a no-network Docker container
   context.py      Token estimate, output truncation, history summarisation
   prompts.py      System prompts for the direct and plan strategies
   agent.py        The agent loop and stop conditions
