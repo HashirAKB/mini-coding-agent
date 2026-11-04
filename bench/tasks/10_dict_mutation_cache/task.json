@@ -1,0 +1,6 @@
+{
+  "id": "10_dict_mutation_cache",
+  "title": "purge_expired() crashes",
+  "category": "mutation during iteration",
+  "description": "`cache.purge_expired(entries, now)` should delete every entry whose expiry time\nis at or before `now` and return the number removed. It crashes with\n`RuntimeError: dictionary changed size during iteration`."
+}

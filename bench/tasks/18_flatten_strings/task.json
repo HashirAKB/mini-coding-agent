@@ -1,0 +1,6 @@
+{
+  "id": "18_flatten_strings",
+  "title": "flatten() crashes on strings",
+  "category": "edge case",
+  "description": "`nested.flatten(items)` flattens arbitrarily nested lists and tuples into one\nlist. Strings must be kept whole (they are values, not containers), but\ncurrently any string in the input causes a `RecursionError`."
+}

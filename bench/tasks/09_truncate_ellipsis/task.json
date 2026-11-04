@@ -1,0 +1,6 @@
+{
+  "id": "09_truncate_ellipsis",
+  "title": "truncate() returns strings longer than max_len",
+  "category": "edge case",
+  "description": "`textutil.truncate(text, max_len)` must never return a string longer than\n`max_len`. When it shortens text it ends with \"...\", and the \"...\" counts\ntowards the limit. Text that already fits is returned unchanged."
+}

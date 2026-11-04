@@ -1,0 +1,6 @@
+{
+  "id": "08_celsius_integer_division",
+  "title": "to_fahrenheit() loses precision",
+  "category": "wrong operator",
+  "description": "`units.to_fahrenheit(celsius)` returns whole numbers only: body temperature\n37 C comes out as 98 F instead of 98.6 F."
+}

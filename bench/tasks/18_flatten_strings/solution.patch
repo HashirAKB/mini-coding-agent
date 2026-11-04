@@ -1,0 +1,11 @@
+--- a/nested/flat.py
++++ b/nested/flat.py
+@@ -1,7 +1,7 @@
+ def flatten(items):
+     result = []
+     for item in items:
+-        if hasattr(item, "__iter__"):
++        if hasattr(item, "__iter__") and not isinstance(item, (str, bytes)):
+             result.extend(flatten(item))
+         else:
+             result.append(item)

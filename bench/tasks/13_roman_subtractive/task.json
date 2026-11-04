@@ -1,0 +1,6 @@
+{
+  "id": "13_roman_subtractive",
+  "title": "to_roman() writes IIII instead of IV",
+  "category": "incomplete logic",
+  "description": "`numerals.to_roman(n)` (1 <= n <= 3999) does not use subtractive notation:\n4 becomes \"IIII\" and 1994 becomes \"MDCCCCLXXXXIIII\" instead of \"MCMXCIV\"."
+}

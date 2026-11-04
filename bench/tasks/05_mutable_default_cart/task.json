@@ -1,0 +1,6 @@
+{
+  "id": "05_mutable_default_cart",
+  "title": "new orders share items",
+  "category": "mutable default argument",
+  "description": "Every call to `shop.add_item(item)` without an explicit `items` list should\nstart a fresh order, but items from earlier orders keep showing up in new ones.\nWhen a list is passed in, the item should be appended to that list."
+}

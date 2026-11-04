@@ -1,0 +1,10 @@
+--- a/shop/orders.py
++++ b/shop/orders.py
+@@ -1,4 +1,6 @@
+-def add_item(item, items=[]):
++def add_item(item, items=None):
+     """Append `item` to `items` (a new order if not given) and return the list."""
++    if items is None:
++        items = []
+     items.append(item)
+     return items

@@ -1,0 +1,6 @@
+{
+  "id": "11_binary_search_bounds",
+  "title": "find() misses elements at the end",
+  "category": "off-by-one",
+  "description": "`searching.find(sorted_items, target)` returns the index of `target` in a sorted\nlist or -1 if it is absent. It sometimes returns -1 for items that are present,\nfor example the last element of a list or the only element of a one-item list."
+}

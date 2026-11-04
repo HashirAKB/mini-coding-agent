@@ -1,0 +1,6 @@
+{
+  "id": "16_money_split_rounding",
+  "title": "split_bill() shares do not add up",
+  "category": "floating point",
+  "description": "`billing.split_bill(total, people)` splits an amount between people, rounded to\ncents. The shares must always add up exactly to the total; any leftover cents go\nto the first people in the list, one cent each."
+}

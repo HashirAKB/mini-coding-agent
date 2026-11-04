@@ -1,0 +1,10 @@
+--- a/searching/bisect_search.py
++++ b/searching/bisect_search.py
+@@ -1,6 +1,6 @@
+ def find(sorted_items, target):
+     lo, hi = 0, len(sorted_items) - 1
+-    while lo < hi:
++    while lo <= hi:
+         mid = (lo + hi) // 2
+         if sorted_items[mid] == target:
+             return mid

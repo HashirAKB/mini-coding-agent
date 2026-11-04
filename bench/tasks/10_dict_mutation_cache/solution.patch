@@ -1,0 +1,11 @@
+--- a/cache/expiry.py
++++ b/cache/expiry.py
+@@ -1,7 +1,7 @@
+ def purge_expired(entries, now):
+     """`entries` maps key -> expiry timestamp. Remove expired keys in place."""
+     removed = 0
+-    for key, expires_at in entries.items():
++    for key, expires_at in list(entries.items()):
+         if expires_at <= now:
+             del entries[key]
+             removed += 1

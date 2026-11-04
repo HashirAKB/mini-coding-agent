@@ -1,0 +1,6 @@
+{
+  "id": "17_date_range_inclusive",
+  "title": "days_between() leaves out the end date",
+  "category": "off-by-one",
+  "description": "`dates.days_between(start, end)` should return every date from `start` to\n`end` inclusive. The end date is missing, so a one-day range is empty."
+}

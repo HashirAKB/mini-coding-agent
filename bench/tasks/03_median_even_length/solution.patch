@@ -1,0 +1,11 @@
+--- a/numstats/central.py
++++ b/numstats/central.py
+@@ -1,4 +1,7 @@
+ def median(values):
+     """Median of a non-empty list of numbers."""
+     ordered = sorted(values)
+-    return ordered[len(ordered) // 2]
++    middle = len(ordered) // 2
++    if len(ordered) % 2 == 0:
++        return (ordered[middle - 1] + ordered[middle]) / 2
++    return ordered[middle]

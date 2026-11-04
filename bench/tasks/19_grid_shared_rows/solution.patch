@@ -1,0 +1,9 @@
+--- a/grids/grid.py
++++ b/grids/grid.py
+@@ -1,5 +1,5 @@
+ def make_grid(rows, cols, fill=0):
+-    return [[fill] * cols] * rows
++    return [[fill] * cols for _ in range(rows)]
+ 
+ 
+ def set_cell(grid, row, col, value):

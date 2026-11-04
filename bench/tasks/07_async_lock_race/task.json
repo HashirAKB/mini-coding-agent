@@ -1,0 +1,6 @@
+{
+  "id": "07_async_lock_race",
+  "title": "Counter loses increments under concurrency",
+  "category": "async bug",
+  "description": "`counters.Counter.increment()` is called from many asyncio tasks at once, but the\nfinal count is far lower than the number of calls. It is supposed to be\nprotected by a lock."
+}

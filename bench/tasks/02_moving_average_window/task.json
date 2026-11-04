@@ -1,0 +1,6 @@
+{
+  "id": "02_moving_average_window",
+  "title": "moving_average() drops the last window",
+  "category": "off-by-one",
+  "description": "`series.moving_average(values, window)` should return the mean of every full\nwindow of consecutive values, but the result is always one element short.\nIf the window is longer than the data there are no full windows."
+}

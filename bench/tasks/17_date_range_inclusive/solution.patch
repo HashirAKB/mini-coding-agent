@@ -1,0 +1,8 @@
+--- a/dates/ranges.py
++++ b/dates/ranges.py
+@@ -2,4 +2,4 @@
+ 
+ 
+ def days_between(start, end):
+-    return [start + timedelta(days=i) for i in range((end - start).days)]
++    return [start + timedelta(days=i) for i in range((end - start).days + 1)]

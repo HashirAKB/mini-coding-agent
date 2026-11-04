@@ -1,0 +1,6 @@
+{
+  "id": "20_sort_multi_key",
+  "title": "sort_employees() orders departments backwards",
+  "category": "wrong sort key",
+  "description": "`hr.sort_employees(employees)` should order employees by department name\nA to Z, and within a department by salary from highest to lowest. Employees\nwith the same department and salary keep their original order. Departments\ncurrently come out Z to A."
+}

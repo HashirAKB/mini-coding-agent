@@ -1,0 +1,8 @@
+--- a/textutil/shorten.py
++++ b/textutil/shorten.py
+@@ -1,4 +1,4 @@
+ def truncate(text, max_len):
+     if len(text) <= max_len:
+         return text
+-    return text[:max_len] + "..."
++    return text[: max_len - 3] + "..."

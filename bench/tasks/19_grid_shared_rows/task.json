@@ -1,0 +1,6 @@
+{
+  "id": "19_grid_shared_rows",
+  "title": "setting one cell changes a whole column",
+  "category": "aliasing",
+  "description": "`grids.make_grid(rows, cols, fill)` builds a rows x cols grid. After\n`set_cell(grid, r, c, value)` the same column changes in every row, as if all\nrows were the same list."
+}

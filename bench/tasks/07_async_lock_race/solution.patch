@@ -1,0 +1,14 @@
+--- a/counters/counter.py
++++ b/counters/counter.py
+@@ -4,9 +4,10 @@
+ class Counter:
+     def __init__(self):
+         self.value = 0
++        self._lock = asyncio.Lock()
+ 
+     async def increment(self):
+-        async with asyncio.Lock():
++        async with self._lock:
+             current = self.value
+             await asyncio.sleep(0)  # simulates an await between read and write
+             self.value = current + 1

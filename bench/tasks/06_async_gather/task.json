@@ -1,0 +1,6 @@
+{
+  "id": "06_async_gather",
+  "title": "fetch_all() returns coroutines instead of results",
+  "category": "async bug",
+  "description": "`fetcher.fetch_all(urls, fetch)` should call the async function `fetch` for\nevery URL concurrently and return the results in the same order as `urls`.\nCallers currently get coroutine objects back instead of results."
+}

@@ -1,0 +1,6 @@
+{
+  "id": "01_pagination_off_by_one",
+  "title": "paginate() skips the first page",
+  "category": "off-by-one",
+  "description": "`pager.paginate(items, page, per_page)` uses 1-based page numbers, but page 1\nreturns the second page of results and the first items can never be reached.\nPages past the end should return an empty list."
+}

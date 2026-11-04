@@ -1,0 +1,6 @@
+{
+  "id": "14_csv_quoted_fields",
+  "title": "parse_line() splits inside quotes",
+  "category": "parsing",
+  "description": "`csvlite.parse_line(line)` should parse one line of standard CSV, but it splits\non every comma, including commas inside double-quoted fields, and leaves the\nquotes in place. Doubled quotes inside a quoted field stand for one quote."
+}

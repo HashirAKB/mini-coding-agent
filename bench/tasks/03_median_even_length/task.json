@@ -1,0 +1,6 @@
+{
+  "id": "03_median_even_length",
+  "title": "median() is wrong for even-length lists",
+  "category": "edge case",
+  "description": "`numstats.median(values)` gives the wrong answer when the list has an even\nnumber of elements. The median of an even-length list is the mean of the two\nmiddle values (after sorting)."
+}

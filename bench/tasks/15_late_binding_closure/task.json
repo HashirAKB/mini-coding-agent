@@ -1,0 +1,6 @@
+{
+  "id": "15_late_binding_closure",
+  "title": "every multiplier multiplies by the same number",
+  "category": "closure late binding",
+  "description": "`funcs.make_multipliers(n)` should return `n` functions where the i-th one\nmultiplies its argument by i. All of them currently multiply by `n - 1`."
+}

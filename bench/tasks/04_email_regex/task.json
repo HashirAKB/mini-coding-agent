@@ -1,0 +1,6 @@
+{
+  "id": "04_email_regex",
+  "title": "is_valid_email() rejects real addresses",
+  "category": "bad regex",
+  "description": "`validators.is_valid_email(address)` rejects perfectly normal addresses such as\n`john.doe+news@example.com` or addresses with digits, capital letters or\nsubdomains. It must still reject strings without a proper `user@domain.tld`\nshape."
+}
