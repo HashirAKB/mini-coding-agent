@@ -54,7 +54,7 @@ E         Use -v to get more diff
 tests/test_stats.py:5: AssertionError
 =========================== short test summary info ============================
 FAILED tests/test_stats.py::test_window_of_two - assert [1.5, 2.5] == [1.5, 2...
-1 failed in 0.02s</pre></section><section class='step'><h2>Step 5</h2><p class='meta'>context estimate 1,093 tokens; usage in/out 1,093/102</p><p class='thought'>I see the bug; applying a fix.</p><p><strong>apply_patch</strong> {}</p><pre><strong>--- a/series/stats.py</strong>
+1 failed in 0.01s</pre></section><section class='step'><h2>Step 5</h2><p class='meta'>context estimate 1,093 tokens; usage in/out 1,093/102</p><p class='thought'>I see the bug; applying a fix.</p><p><strong>apply_patch</strong> {}</p><pre><strong>--- a/series/stats.py</strong>
 <strong>+++ b/series/stats.py</strong>
 <span class="hunk">@@ -1,3 +1,3 @@</span>
  def moving_average(values, window):

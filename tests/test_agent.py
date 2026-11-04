@@ -114,3 +114,22 @@ def test_trajectory_is_recorded_and_replays(tmp_path: Path, repo: Path) -> None:
     assert replayed.stop_reason == original.stop_reason
     assert replayed.steps == original.steps
     assert "/ len(values)\n" in (fresh / "calc.py").read_text()
+
+
+class FailingProvider:
+    name = "failing"
+    model = "failing"
+
+    def complete(self, system: str, messages: list[Message], tools: object) -> ModelResponse:
+        raise ConnectionError("API unreachable")
+
+
+def test_provider_errors_end_the_run_instead_of_crashing(
+    tmp_path: Path, workspace: Workspace
+) -> None:
+    path = tmp_path / "run.jsonl"
+    with TrajectoryWriter(path) as writer:
+        result = Agent(FailingProvider(), ToolBox(workspace), AgentConfig(), writer).run(TASK)  # type: ignore[arg-type]
+    assert result.stop_reason == "provider_error"
+    assert "ConnectionError: API unreachable" in result.finish_summary
+    assert read_trajectory(path)[-1]["stop_reason"] == "provider_error"

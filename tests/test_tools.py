@@ -100,3 +100,26 @@ def test_unknown_tool_and_bad_arguments(workspace: Workspace) -> None:
     assert missing.is_error and "path" in missing.output
     wrong_type = run(box, "read_file", path="calc.py", start_line="one")
     assert wrong_type.is_error and "start_line" in wrong_type.output
+
+
+def test_read_file_rejects_bad_line_ranges(workspace: Workspace) -> None:
+    box = ToolBox(workspace)
+    zero = run(box, "read_file", path="calc.py", start_line=0)
+    assert zero.is_error and "start_line" in zero.output
+    backwards = run(box, "read_file", path="calc.py", start_line=5, end_line=2)
+    assert backwards.is_error and "end_line" in backwards.output
+
+
+def test_search_missing_path_is_an_error(workspace: Workspace) -> None:
+    result = run(ToolBox(workspace), "search", pattern="x", path="nope")
+    assert result.is_error and "does not exist" in result.output
+
+
+def test_search_does_not_follow_symlinks_out_of_the_workspace(
+    workspace: Workspace, tmp_path: Path
+) -> None:
+    secret = tmp_path / "secret.txt"
+    secret.write_text("password=hunter2\n")
+    (workspace.root / "leak.txt").symlink_to(secret)
+    result = run(ToolBox(workspace), "search", pattern="password")
+    assert "hunter2" not in result.output

@@ -172,6 +172,10 @@ class ToolBox:
             lines = target.read_text().splitlines()
         except UnicodeDecodeError as error:
             raise ToolError(f"read_file: '{path}' is not a UTF-8 text file.") from error
+        if start_line < 1:
+            raise ToolError("read_file: start_line must be 1 or more (lines are 1-based).")
+        if end_line is not None and end_line < start_line:
+            raise ToolError("read_file: end_line must not be smaller than start_line.")
         total = len(lines)
         if total == 0:
             return f"{path} (empty file)"
@@ -190,11 +194,15 @@ class ToolBox:
         except re.error as error:
             raise ToolError(f"Invalid regex {pattern!r}: {error}") from error
         root = self.workspace.resolve(path)
+        if not root.exists():
+            raise ToolError(f"search: '{path}' does not exist.")
         files = [root] if root.is_file() else sorted(p for p in root.rglob("*") if p.is_file())
         matches: list[str] = []
         for file in files:
             if IGNORED_NAMES.intersection(file.relative_to(self.workspace.root).parts):
                 continue
+            if not file.resolve().is_relative_to(self.workspace.root):
+                continue  # a symlink pointing outside the workspace
             try:
                 text = file.read_text()
             except UnicodeDecodeError:

@@ -96,6 +96,7 @@ An agent loop must always terminate. This one stops when
 | `no_tool_call` | a reply with no tool call (except the plan turn) | the model thinks it is done talking |
 | `max_steps` | step counter reaches the limit | bounds time and loops |
 | `token_budget` | summed tokens reach the budget | bounds money |
+| `provider_error` | the model call raised (network, API error) | one bad call ends one run, not the benchmark |
 
 Note the order inside the loop: the budget is checked *before* each model call,
 so a run never starts a call it cannot afford. `finish` is an explicit tool
@@ -218,7 +219,7 @@ the fixed system prompt, the history and the tool specs, append the assistant
 turn, run each tool call through `ToolBox.execute`, truncate each output, record
 the step to JSONL, and stop on `finish`. A reply with no tool call stops the run
 (except the plan turn in the plan strategy). After `max_steps` it stops with
-`max_steps`.
+`max_steps`; if the provider raises, it stops with `provider_error`.
 
 **2. How do you stop an agent from touching files outside its sandbox?**
 Every path goes through `Workspace.resolve`: join with the root, call
@@ -267,7 +268,8 @@ Visible tests are restored from the original before scoring. Visible pass with
 hidden fail is labelled `test_overfit`.
 
 **9. Explain your failure taxonomy.**
-`classify_failure`, ordered rules: passed; budget stop; nothing changed (broken
+`classify_failure`, ordered rules: passed; provider error (an infrastructure
+failure, never blamed on the agent); budget stop; nothing changed (broken
 patch if any patch was rejected, otherwise gave up); changed files don't
 overlap the reference fix (wrong file); visible pass but hidden fail (overfit);
 otherwise incorrect fix. One label per failure, computed from the workspace diff

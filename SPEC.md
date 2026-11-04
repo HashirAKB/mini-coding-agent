@@ -143,6 +143,11 @@ runs both suites in the workspace.
   new live run nor scripted.
 - **Extra failure category `incorrect_fix`** (right file, tests still fail),
   so that every failed run gets exactly one label.
+- **Extra stop reason and failure category `provider_error`.** Found in the
+  review pass: an exception from the model call (network, rate limit, an
+  exhausted replay) used to crash the whole benchmark. It now ends only that
+  run and is reported separately, so infrastructure failures are never counted
+  as agent failures.
 - **Docker image not built in the build environment.** The local Docker daemon
   could pull no base image (Docker Hub answered `429 Too Many Requests`). Per
   the offline rule no other route was tried; instead CI has a `docker` job that

@@ -6,13 +6,14 @@
 
 | strategy | pass@1 | avg steps | total tokens | avg tokens | cost (USD) | avg wall (s) |
 |---|---|---|---|---|---|---|
-| direct | 15/20 (75%) | 7.3 | 167,604 | 8,380 | 0.73 | 0.74 |
-| plan | 15/20 (75%) | 8.2 | 193,831 | 9,692 | 0.84 | 0.69 |
+| direct | 15/20 (75%) | 7.3 | 167,604 | 8,380 | 0.73 | 0.63 |
+| plan | 15/20 (75%) | 8.2 | 193,831 | 9,692 | 0.84 | 0.67 |
 
 ## Failure taxonomy
 
 | category | direct | plan |
 |---|---|---|
+| provider_error | 0 | 0 |
 | budget_exceeded | 1 | 1 |
 | broken_patch | 1 | 1 |
 | gave_up | 1 | 1 |

@@ -21,6 +21,10 @@ SOLUTION = {"pkg/core.py"}
     [
         (dict(visible=True, hidden=True, stop="finished", changed=SOLUTION, failed=0), None),
         (
+            dict(visible=False, hidden=False, stop="provider_error", changed=SOLUTION, failed=0),
+            "provider_error",
+        ),
+        (
             dict(visible=False, hidden=False, stop="max_steps", changed=set(), failed=0),
             "budget_exceeded",
         ),

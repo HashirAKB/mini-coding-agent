@@ -19,7 +19,7 @@
       "total_tokens": 167604,
       "avg_tokens": 8380.2,
       "total_cost_usd": 0.72968,
-      "avg_wall_seconds": 0.7352803584500066,
+      "avg_wall_seconds": 0.6277169700999365,
       "failures": {
         "test_overfit": 1,
         "broken_patch": 1,
@@ -36,7 +36,7 @@
       "total_tokens": 193831,
       "avg_tokens": 9691.55,
       "total_cost_usd": 0.843948,
-      "avg_wall_seconds": 0.691000109200013,
+      "avg_wall_seconds": 0.671844569149971,
       "failures": {
         "test_overfit": 1,
         "broken_patch": 1,
@@ -60,7 +60,7 @@
       "input_tokens": 5698,
       "output_tokens": 160,
       "cost_usd": 0.025992,
-      "wall_seconds": 0.7620503630000712,
+      "wall_seconds": 0.6408754600001885,
       "changed_files": [
         "pager/core.py"
       ]
@@ -78,7 +78,7 @@
       "input_tokens": 5474,
       "output_tokens": 178,
       "cost_usd": 0.025456,
-      "wall_seconds": 0.7339999069999976,
+      "wall_seconds": 0.7039569270000356,
       "changed_files": [
         "series/stats.py"
       ]
@@ -96,7 +96,7 @@
       "input_tokens": 8274,
       "output_tokens": 310,
       "cost_usd": 0.039296,
-      "wall_seconds": 0.8914245930000106,
+      "wall_seconds": 0.6684231020003608,
       "changed_files": [
         "numstats/central.py"
       ]
@@ -114,7 +114,7 @@
       "input_tokens": 5416,
       "output_tokens": 147,
       "cost_usd": 0.024604,
-      "wall_seconds": 0.7643943890000173,
+      "wall_seconds": 0.6466287159996682,
       "changed_files": [
         "validators/email.py"
       ]
@@ -132,7 +132,7 @@
       "input_tokens": 5495,
       "output_tokens": 164,
       "cost_usd": 0.02526,
-      "wall_seconds": 0.9389982390000569,
+      "wall_seconds": 0.6877451729997119,
       "changed_files": [
         "shop/orders.py"
       ]
@@ -150,7 +150,7 @@
       "input_tokens": 5563,
       "output_tokens": 165,
       "cost_usd": 0.025552,
-      "wall_seconds": 0.8719094849998328,
+      "wall_seconds": 0.7120946559998629,
       "changed_files": [
         "fetcher/client.py"
       ]
@@ -168,7 +168,7 @@
       "input_tokens": 6344,
       "output_tokens": 317,
       "cost_usd": 0.031716,
-      "wall_seconds": 0.3987798240000302,
+      "wall_seconds": 0.3283077249998314,
       "changed_files": []
     },
     {
@@ -184,7 +184,7 @@
       "input_tokens": 5108,
       "output_tokens": 134,
       "cost_usd": 0.023112,
-      "wall_seconds": 0.8862148600001092,
+      "wall_seconds": 0.6724230370000441,
       "changed_files": [
         "units/temperature.py"
       ]
@@ -202,7 +202,7 @@
       "input_tokens": 5344,
       "output_tokens": 149,
       "cost_usd": 0.024356,
-      "wall_seconds": 0.826246903000083,
+      "wall_seconds": 0.6451153940001859,
       "changed_files": [
         "textutil/shorten.py"
       ]
@@ -220,7 +220,7 @@
       "input_tokens": 5985,
       "output_tokens": 110,
       "cost_usd": 0.02614,
-      "wall_seconds": 0.8699329319999833,
+      "wall_seconds": 0.6923993739997059,
       "changed_files": [
         "FIX_NOTES.md"
       ]
@@ -238,7 +238,7 @@
       "input_tokens": 5610,
       "output_tokens": 167,
       "cost_usd": 0.02578,
-      "wall_seconds": 0.7245171590000155,
+      "wall_seconds": 0.6705880810000053,
       "changed_files": [
         "searching/bisect_search.py"
       ]
@@ -256,7 +256,7 @@
       "input_tokens": 5195,
       "output_tokens": 142,
       "cost_usd": 0.02362,
-      "wall_seconds": 0.8526504749997912,
+      "wall_seconds": 0.6727392059997328,
       "changed_files": [
         "calendar_utils/years.py"
       ]
@@ -274,7 +274,7 @@
       "input_tokens": 3258,
       "output_tokens": 69,
       "cost_usd": 0.014412,
-      "wall_seconds": 0.37344007499996223,
+      "wall_seconds": 0.31593712700032484,
       "changed_files": []
     },
     {
@@ -290,7 +290,7 @@
       "input_tokens": 8226,
       "output_tokens": 240,
       "cost_usd": 0.037704,
-      "wall_seconds": 0.7086083090000557,
+      "wall_seconds": 0.7066707279996081,
       "changed_files": [
         "csvlite/reader.py"
       ]
@@ -308,7 +308,7 @@
       "input_tokens": 5179,
       "output_tokens": 139,
       "cost_usd": 0.023496,
-      "wall_seconds": 0.8037203809999482,
+      "wall_seconds": 0.7115012280000883,
       "changed_files": [
         "funcs/factory.py"
       ]
@@ -326,7 +326,7 @@
       "input_tokens": 5379,
       "output_tokens": 171,
       "cost_usd": 0.024936,
-      "wall_seconds": 0.8024464899999657,
+      "wall_seconds": 0.6543431750001218,
       "changed_files": [
         "billing/split.py"
       ]
@@ -344,7 +344,7 @@
       "input_tokens": 55319,
       "output_tokens": 452,
       "cost_usd": 0.230316,
-      "wall_seconds": 0.3599927630000366,
+      "wall_seconds": 0.39615420499967513,
       "changed_files": []
     },
     {
@@ -360,7 +360,7 @@
       "input_tokens": 5994,
       "output_tokens": 173,
       "cost_usd": 0.027436,
-      "wall_seconds": 0.6777050630000758,
+      "wall_seconds": 0.6500342459999047,
       "changed_files": [
         "nested/flat.py"
       ]
@@ -378,7 +378,7 @@
       "input_tokens": 5345,
       "output_tokens": 146,
       "cost_usd": 0.0243,
-      "wall_seconds": 0.7119298610000442,
+      "wall_seconds": 0.7192684769997868,
       "changed_files": [
         "grids/grid.py"
       ]
@@ -396,7 +396,7 @@
       "input_tokens": 5694,
       "output_tokens": 171,
       "cost_usd": 0.026196,
-      "wall_seconds": 0.7466450980000445,
+      "wall_seconds": 0.6591333649998887,
       "changed_files": [
         "hr/ordering.py"
       ]
@@ -414,7 +414,7 @@
       "input_tokens": 7007,
       "output_tokens": 190,
       "cost_usd": 0.031828,
-      "wall_seconds": 0.8703003299999637,
+      "wall_seconds": 0.7404584609998892,
       "changed_files": [
         "pager/core.py"
       ]
@@ -432,7 +432,7 @@
       "input_tokens": 6786,
       "output_tokens": 208,
       "cost_usd": 0.031304,
-      "wall_seconds": 0.7517247230000521,
+      "wall_seconds": 0.7250475720002214,
       "changed_files": [
         "series/stats.py"
       ]
@@ -450,7 +450,7 @@
       "input_tokens": 9772,
       "output_tokens": 340,
       "cost_usd": 0.045888,
-      "wall_seconds": 0.672304854999993,
+      "wall_seconds": 0.7065479299999424,
       "changed_files": [
         "numstats/central.py"
       ]
@@ -468,7 +468,7 @@
       "input_tokens": 6733,
       "output_tokens": 177,
       "cost_usd": 0.030472,
-      "wall_seconds": 0.7076441280000836,
+      "wall_seconds": 0.7650778150000406,
       "changed_files": [
         "validators/email.py"
       ]
@@ -486,7 +486,7 @@
       "input_tokens": 6809,
       "output_tokens": 194,
       "cost_usd": 0.031116,
-      "wall_seconds": 0.7143492599998353,
+      "wall_seconds": 0.7717436510001789,
       "changed_files": [
         "shop/orders.py"
       ]
@@ -504,7 +504,7 @@
       "input_tokens": 6875,
       "output_tokens": 195,
       "cost_usd": 0.0314,
-      "wall_seconds": 0.7250252879998698,
+      "wall_seconds": 0.7376509169998826,
       "changed_files": [
         "fetcher/client.py"
       ]
@@ -522,7 +522,7 @@
       "input_tokens": 7646,
       "output_tokens": 347,
       "cost_usd": 0.037524,
-      "wall_seconds": 0.38425096600008146,
+      "wall_seconds": 0.3320820300000378,
       "changed_files": []
     },
     {
@@ -538,7 +538,7 @@
       "input_tokens": 6395,
       "output_tokens": 164,
       "cost_usd": 0.02886,
-      "wall_seconds": 0.720311817000038,
+      "wall_seconds": 0.7458508589998019,
       "changed_files": [
         "units/temperature.py"
       ]
@@ -556,7 +556,7 @@
       "input_tokens": 6655,
       "output_tokens": 179,
       "cost_usd": 0.0302,
-      "wall_seconds": 0.7963986329998534,
+      "wall_seconds": 0.7227336949999881,
       "changed_files": [
         "textutil/shorten.py"
       ]
@@ -574,7 +574,7 @@
       "input_tokens": 7295,
       "output_tokens": 140,
       "cost_usd": 0.03198,
-      "wall_seconds": 0.7549792400000115,
+      "wall_seconds": 0.7019930259998546,
       "changed_files": [
         "FIX_NOTES.md"
       ]
@@ -592,7 +592,7 @@
       "input_tokens": 6928,
       "output_tokens": 197,
       "cost_usd": 0.031652,
-      "wall_seconds": 0.6823997090000375,
+      "wall_seconds": 0.7281003299999611,
       "changed_files": [
         "searching/bisect_search.py"
       ]
@@ -610,7 +610,7 @@
       "input_tokens": 6505,
       "output_tokens": 172,
       "cost_usd": 0.02946,
-      "wall_seconds": 0.6883991870001864,
+      "wall_seconds": 0.6822513170000093,
       "changed_files": [
         "calendar_utils/years.py"
       ]
@@ -628,7 +628,7 @@
       "input_tokens": 4359,
       "output_tokens": 99,
       "cost_usd": 0.019416,
-      "wall_seconds": 0.35772486900009426,
+      "wall_seconds": 0.3381959539997297,
       "changed_files": []
     },
     {
@@ -644,7 +644,7 @@
       "input_tokens": 9736,
       "output_tokens": 270,
       "cost_usd": 0.044344,
-      "wall_seconds": 0.7662123160000647,
+      "wall_seconds": 0.6456455699999424,
       "changed_files": [
         "csvlite/reader.py"
       ]
@@ -662,7 +662,7 @@
       "input_tokens": 6474,
       "output_tokens": 169,
       "cost_usd": 0.029276,
-      "wall_seconds": 0.7878155959999731,
+      "wall_seconds": 0.7143470490000254,
       "changed_files": [
         "funcs/factory.py"
       ]
@@ -680,7 +680,7 @@
       "input_tokens": 6689,
       "output_tokens": 201,
       "cost_usd": 0.030776,
-      "wall_seconds": 0.7303274690000308,
+      "wall_seconds": 0.780002025000158,
       "changed_files": [
         "billing/split.py"
       ]
@@ -698,7 +698,7 @@
       "input_tokens": 55912,
       "output_tokens": 467,
       "cost_usd": 0.232988,
-      "wall_seconds": 0.37533325699996567,
+      "wall_seconds": 0.3537351330001002,
       "changed_files": []
     },
     {
@@ -714,7 +714,7 @@
       "input_tokens": 7305,
       "output_tokens": 203,
       "cost_usd": 0.03328,
-      "wall_seconds": 0.8423859320000702,
+      "wall_seconds": 0.7011351779997312,
       "changed_files": [
         "nested/flat.py"
       ]
@@ -732,7 +732,7 @@
       "input_tokens": 6646,
       "output_tokens": 176,
       "cost_usd": 0.030104,
-      "wall_seconds": 0.7861539259999972,
+      "wall_seconds": 0.7996153220001361,
       "changed_files": [
         "grids/grid.py"
       ]
@@ -750,7 +750,7 @@
       "input_tokens": 7015,
       "output_tokens": 201,
       "cost_usd": 0.03208,
-      "wall_seconds": 0.7059606830000575,
+      "wall_seconds": 0.744677548999789,
       "changed_files": [
         "hr/ordering.py"
       ]

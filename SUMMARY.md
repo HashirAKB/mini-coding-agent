@@ -3,8 +3,8 @@
 ## What was built
 
 - A coding agent written from scratch in Python 3.11+: a hand-written loop
-  (model call, tool calls, observations, repeat) with five stop conditions
-  (finished, gave up, no tool call, max steps, token budget).
+  (model call, tool calls, observations, repeat) with six stop conditions
+  (finished, gave up, no tool call, max steps, token budget, provider error).
 - Six tools confined to a temporary working copy: `list_dir`, `read_file`
   (line ranges, paging), `search` (regex, capped), `apply_patch` (own unified
   diff applier, all or nothing, model-facing errors), `run_tests` (pytest with a
@@ -23,10 +23,10 @@
 - A harness that runs each task in isolation, records JSONL trajectories,
   restores visible tests and adds hidden ones before scoring, reports pass@1,
   average steps, tokens, cost and wall time per strategy, and labels every
-  failure (budget exceeded, broken patch, gave up, wrong file, test overfit,
-  incorrect fix).
+  failure (provider error, budget exceeded, broken patch, gave up, wrong file,
+  test overfit, incorrect fix).
 - A direct vs plan-then-act strategy comparison, a static HTML trajectory
-  viewer, a CLI, 98 tests, CI (lint, typecheck, tests, mock benchmark with a
+  viewer, a CLI, over 100 tests, CI (lint, typecheck, tests, mock benchmark with a
   pass-rate gate) and a Dockerfile.
 
 ## What is mocked and what is real
@@ -58,10 +58,10 @@ and nothing about the agent's ability.
 - Built a coding agent from scratch in Python (no agent frameworks) with a
   provider-agnostic tool-calling loop, sandboxed file and test tools, a custom
   unified diff applier with model-facing errors, and context management
-  (output truncation and history summarisation), covered by 98 tests.
+  (output truncation and history summarisation), covered by over 100 tests.
 - Designed a SWE-bench-style evaluation harness over 20 buggy Python packages
   with hidden tests to detect overfitting, per-task isolation, JSONL
-  trajectories, pass@1, token and cost metrics, and a six-way failure taxonomy.
+  trajectories, pass@1, token and cost metrics, and a seven-way failure taxonomy.
 - Made the whole system run offline and deterministically with a scripted mock
   model and trajectory replay, and wired the mock benchmark into GitHub Actions
   CI as a regression gate.

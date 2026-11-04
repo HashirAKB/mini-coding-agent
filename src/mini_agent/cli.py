@@ -15,12 +15,10 @@ from pathlib import Path
 from typing import Any
 
 from mini_agent.agent import AgentConfig
-from mini_agent.bench import run_benchmark, run_task
+from mini_agent.bench import MODES, run_benchmark, run_task
 from mini_agent.tasks import TASKS_DIR, Task, load_tasks
 from mini_agent.trajectory import read_trajectory
 from mini_agent.viewer import render_run, render_trajectory
-
-PROVIDERS = ["mock", "anthropic", "replay"]
 
 
 def _indent(text: str, limit: int = 12) -> str:
@@ -61,6 +59,8 @@ def format_trajectory(events: list[dict[str, Any]]) -> str:
                 f"\nstopped: {event['stop_reason']} after {event['steps']} steps, "
                 f"tokens in/out {event['usage']['input_tokens']}/{event['usage']['output_tokens']}"
             )
+            if event["finish_summary"]:
+                out.append(f"summary: {event['finish_summary']}")
         elif event["type"] == "evaluation":
             verdict = "PASS" if event["failure"] is None else f"FAIL ({event['failure']})"
             out.append(
@@ -90,7 +90,7 @@ def main(argv: list[str] | None = None) -> int:
 
     bench = sub.add_parser("bench", help="Run the benchmark and write results")
     bench.add_argument("--tasks", help="comma-separated task ids or prefixes (default: all)")
-    bench.add_argument("--out", type=Path, default=Path("bench/results/mock"))
+    bench.add_argument("--out", type=Path, help="default: bench/results/<mock|live|replay>")
     bench.add_argument("--replay-dir", type=Path, help="recorded run to replay (--provider replay)")
     bench.add_argument(
         "--min-pass-rate",
@@ -102,8 +102,9 @@ def main(argv: list[str] | None = None) -> int:
     view = sub.add_parser("view", help="Render a run directory or one .jsonl file as HTML")
     view.add_argument("path", type=Path)
 
+    run.add_argument("--provider", choices=["mock", "anthropic"], default="mock")
+    bench.add_argument("--provider", choices=list(MODES), default="mock")
     for command in (run, bench):
-        command.add_argument("--provider", choices=PROVIDERS, default="mock")
         command.add_argument("--max-steps", type=int, default=AgentConfig.max_steps)
     run.add_argument("--strategy", choices=["direct", "plan"], default="direct")
     bench.add_argument("--strategy", choices=["direct", "plan", "both"], default="both")
@@ -132,6 +133,7 @@ def main(argv: list[str] | None = None) -> int:
 
     strategies = ["direct", "plan"] if args.strategy == "both" else [args.strategy]
     tasks = _select(tasks, args.tasks)
+    args.out = args.out or Path("bench/results") / MODES[args.provider]
     results = run_benchmark(tasks, args.provider, strategies, args.out, config, args.replay_dir)
     print((args.out / "results.md").read_text())
     print(f"{len(results)} runs written to {args.out}")

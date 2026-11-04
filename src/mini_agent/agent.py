@@ -5,7 +5,7 @@
         response = model(system, messages, tools)       # think + choose tools
         results  = [run(tool_call) for each tool call]  # act
         messages += [response, results]                 # observe
-    until finish / no tool call / max steps / token budget
+    until finish / no tool call / max steps / token budget / provider error
 
 Everything else in this package exists to make one of those lines safe,
 bounded or measurable.
@@ -28,8 +28,6 @@ from mini_agent.providers.base import Provider
 from mini_agent.tools import TOOL_SPECS, ToolBox
 from mini_agent.trajectory import TrajectoryWriter
 from mini_agent.types import Message, ModelResponse, ToolResult, Usage
-
-STOP_REASONS = ("finished", "gave_up", "no_tool_call", "max_steps", "token_budget")
 
 
 @dataclass
@@ -108,7 +106,11 @@ class Agent:
                 return stop("token_budget", step - 1)
 
             context_tokens = self._manage_context(step, messages)
-            response = self.provider.complete(self.system, messages, TOOL_SPECS)
+            try:
+                response = self.provider.complete(self.system, messages, TOOL_SPECS)
+            except Exception as error:  # network, rate limit, bad request, exhausted replay
+                # One failed call should end this run, not the whole benchmark.
+                return stop("provider_error", step - 1, None, f"{type(error).__name__}: {error}")
             usage.input_tokens += response.usage.input_tokens
             usage.output_tokens += response.usage.output_tokens
             messages.append(

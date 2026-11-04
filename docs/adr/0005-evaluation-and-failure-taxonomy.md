@@ -15,7 +15,7 @@ how often.
   restores the original visible tests, copies in the hidden tests, and runs
   both suites.
 - `classify_failure` gives each failed run exactly one label, checking in
-  order: budget exceeded, broken patch (no change, a patch was rejected), gave
+  order: provider error (the model call itself failed), budget exceeded, broken patch (no change, a patch was rejected), gave
   up (no change, no patch tried), wrong file (no changed file overlaps the
   reference fix), test overfit (visible pass, hidden fail), incorrect fix.
 - A test asserts, for all 20 tasks, that both suites fail before and pass

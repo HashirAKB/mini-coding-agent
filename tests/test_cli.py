@@ -54,3 +54,11 @@ def test_view_renders_a_run(tmp_path: Path) -> None:
     jsonl = tmp_path / "trajectories" / "direct" / "01_pagination_off_by_one.jsonl"
     assert main(["view", str(jsonl)]) == 0
     assert jsonl.with_suffix(".html").is_file()
+
+
+def test_bench_output_directory_defaults_to_the_mode(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.chdir(tmp_path)  # so the default bench/results/mock lands in tmp_path
+    assert main(["bench", "--tasks", "01_", "--strategy", "direct"]) == 0
+    assert (tmp_path / "bench" / "results" / "mock" / "results.md").is_file()

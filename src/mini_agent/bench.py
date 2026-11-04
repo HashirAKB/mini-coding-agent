@@ -49,6 +49,7 @@ MOCK_BEHAVIOURS = {
 }
 
 FAILURE_CATEGORIES = (
+    "provider_error",  # the model call itself failed (network, API error)
     "budget_exceeded",  # hit max steps or the token budget
     "broken_patch",  # tried to patch, but no patch ever applied
     "gave_up",  # stopped without trying a patch
@@ -107,6 +108,8 @@ def classify_failure(
     """
     if visible_passed and hidden_passed:
         return None
+    if stop_reason == "provider_error":
+        return "provider_error"
     if stop_reason in BUDGET_STOPS:
         return "budget_exceeded"
     if not changed_files:
@@ -126,14 +129,18 @@ def _files(root: Path) -> dict[str, Path]:
     }
 
 
+def _lines(path: Path) -> list[str]:
+    return path.read_text(errors="replace").splitlines(keepends=True)
+
+
 def workspace_diff(original: Path, workspace: Path) -> tuple[str, set[str]]:
     """Unified diff of everything the agent changed, plus the changed paths."""
     before, after = _files(original), _files(workspace)
     chunks: list[str] = []
     changed: set[str] = set()
     for name in sorted(before.keys() | after.keys()):
-        old = before[name].read_text().splitlines(keepends=True) if name in before else []
-        new = after[name].read_text().splitlines(keepends=True) if name in after else []
+        old = _lines(before[name]) if name in before else []
+        new = _lines(after[name]) if name in after else []
         if old == new:
             continue
         changed.add(name)

@@ -7,7 +7,7 @@ unified diffs, verifies, and stops. Every file and test command is confined to a
 throwaway working copy. The harness runs each task in isolation, scores the
 result against hidden tests the agent never sees, records the full trajectory as
 JSONL, labels every failure (wrong file, broken patch, gave up, test overfit,
-budget exceeded, incorrect fix) and renders each run as a static HTML page. It
+budget exceeded, incorrect fix, provider error) and renders each run as a static HTML page. It
 builds, tests and demos with zero API keys; the live Claude provider switches on
 only when you ask for it and `ANTHROPIC_API_KEY` is set.
 
@@ -21,13 +21,14 @@ flowchart TD
     B -- yes --> C[Context check: estimate tokens,<br/>summarise old turns if above 75% of limit]
     C --> P[Provider.complete system, messages, tools]
     P --> R{tool calls?}
+    P -. raises .-> S4[stop: provider_error]
     R -- none --> S2[stop: no_tool_call]
     R -- finish --> S3[stop: finished / gave_up]
     R -- yes --> X[Run each tool in the workspace<br/>list_dir, read_file, search, apply_patch, run_tests]
     X --> O[Truncate large outputs with a re-read hint]
     O --> A[Append assistant turn + tool results]
     A --> B
-    S1 & S2 & S3 --> E[Harness: diff workspace, restore visible tests,<br/>add hidden tests, run both, classify]
+    S1 & S2 & S3 & S4 --> E[Harness: diff workspace, restore visible tests,<br/>add hidden tests, run both, classify]
 ```
 
 ## Quickstart
@@ -103,6 +104,7 @@ evaluation: visible tests pass, hidden tests pass -> PASS
 
 | failure category | direct (mock) | plan (mock) |
 |---|---|---|
+| provider_error | 0 | 0 |
 | budget_exceeded | 1 | 1 |
 | broken_patch | 1 | 1 |
 | gave_up | 1 | 1 |
