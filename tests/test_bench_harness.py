@@ -179,7 +179,7 @@ def test_parallel_workers_give_the_same_results_in_the_same_order(tmp_path: Path
     assert [key(r) for r in parallel] == [key(r) for r in serial]
 
 
-def test_compare_results_ignores_wall_time_only() -> None:
+def test_compare_results_ignores_environment_dependent_fields() -> None:
     from mini_agent.bench import compare_results
 
     expected = {
@@ -190,8 +190,9 @@ def test_compare_results_ignores_wall_time_only() -> None:
     same_but_slower = {
         "mode": "mock",
         "strategies": {"direct": {"pass_at_1": 0.75, "avg_wall_seconds": 9.9}},
-        "results": [{"task_id": "a", "passed": True, "wall_seconds": 3.0}],
+        "results": [{"task_id": "a", "passed": True, "wall_seconds": 3.0, "input_tokens": 9}],
     }
+    expected["results"][0]["input_tokens"] = 8  # type: ignore[index]
     assert compare_results(expected, same_but_slower) == []
     regressed = {
         "mode": "mock",

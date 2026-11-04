@@ -160,8 +160,10 @@ considered, why.
 
 ## D17. CI compares a fresh mock run with the committed results
 - **Decision:** `bench --compare-to DIR` diffs the new `results.json` against
-  `DIR/results.json`, ignoring `wall_seconds` and `avg_wall_seconds`, and exits
-  1 on any difference. CI runs it against `bench/results/mock`.
+  `DIR/results.json`, ignoring timings and input-token-derived fields, and
+  exits 1 on any difference. (A first version compared input tokens too and
+  failed in CI: pytest output, from which mock input tokens are estimated,
+  differs between Python 3.11 and 3.13.) CI runs it against `bench/results/mock`.
 - **Alternatives:** regenerate results in CI and commit them automatically;
   compare only pass@1.
 - **Why:** mock runs are deterministic apart from timing, so an exact

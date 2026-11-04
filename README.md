@@ -172,9 +172,11 @@ Each has a longer write-up in [`docs/adr/`](docs/adr) and
   digest is used instead, so summarisation can never break a run. Replay
   reproduces recorded summaries too.
 - **Committed results are checked in CI.** `bench --compare-to bench/results/mock`
-  reruns the mock benchmark and fails if anything other than wall time differs
-  from the committed `results.json`, so the numbers in this README cannot go
-  stale silently.
+  reruns the mock benchmark and fails if steps, outcomes, failure labels, stop
+  reasons, output tokens or config differ from the committed `results.json`.
+  Timings and input-token estimates are skipped: mock input tokens are counted
+  from tool outputs, and pytest's output differs slightly between Python and
+  pytest versions (so CI's token totals are within about 1% of the table above).
 - **Time is split into model and tools.** Every step records how long the
   model call and the tool calls took, and results report averages per
   strategy, so a slow run can be attributed to API latency or to slow tests.

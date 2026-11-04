@@ -363,26 +363,37 @@ def render_markdown(
     return "\n".join(lines) + "\n"
 
 
-TIMING_KEYS = {
+# Fields that legitimately differ between machines, so compare_results skips them:
+# timings, and input-token counts (plus the costs and totals derived from them),
+# because mock input tokens are estimated from tool outputs, and pytest's output
+# varies with the Python and pytest versions (traceback format, durations).
+ENVIRONMENT_DEPENDENT_KEYS = {
     "wall_seconds",
     "model_seconds",
     "tool_seconds",
     "avg_wall_seconds",
     "avg_model_seconds",
     "avg_tool_seconds",
+    "input_tokens",
+    "cache_read_tokens",
+    "cost_usd",
+    "total_tokens",
+    "avg_tokens",
+    "total_cost_usd",
 }
 
 
 def compare_results(expected: Any, actual: Any, path: str = "") -> list[str]:
-    """Differences between two results.json payloads, ignoring wall-clock timings.
+    """Differences between two results.json payloads, ignoring environment-dependent fields.
 
     Used by CI to check that the committed mock results still match a fresh
-    run: everything in mock mode is deterministic except how long it took.
+    run. In mock mode, steps, outcomes, failure labels, stop reasons, output
+    tokens and config are deterministic; see ENVIRONMENT_DEPENDENT_KEYS for the rest.
     """
     if isinstance(expected, dict) and isinstance(actual, dict):
         differences = []
         for key in sorted(expected.keys() | actual.keys()):
-            if key in TIMING_KEYS:
+            if key in ENVIRONMENT_DEPENDENT_KEYS:
                 continue
             child = f"{path}.{key}" if path else str(key)
             if key not in actual or key not in expected:
