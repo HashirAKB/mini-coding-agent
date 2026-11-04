@@ -155,7 +155,8 @@ def render_run(run_dir: Path) -> Path:
         rows.append(
             f'<tr><td><a href="{escape(strategy)}/{escape(task_id)}.html">{escape(task_id)}</a>'
             f"</td><td>{escape(strategy)}</td><td>{verdict}</td>"
-            f"<td>{escape(str(end.get('stop_reason', '')))}</td><td>{end.get('steps', '')}</td></tr>"
+            f"<td>{escape(str(end.get('stop_reason', '')))}</td>"
+            f"<td>{end.get('steps', '')}</td></tr>"
         )
     table = (
         "<div class='table-wrap'><table><tr><th>task</th><th>strategy</th><th>result</th>"
