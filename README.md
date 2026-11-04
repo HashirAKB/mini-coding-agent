@@ -159,6 +159,12 @@ Each has a longer write-up in [`docs/adr/`](docs/adr) and
   times and reports pass@1 and pass@N as 1 - C(n-c, k) / C(n, k) averaged over
   tasks, which is lower-variance than "did any of k runs pass". In mock mode
   every sample is identical, so pass@N equals pass@1.
+- **Parallel runs with threads.** `bench --workers N` runs tasks on a thread
+  pool (the work is waiting on pytest subprocesses and API calls) and keeps
+  results in job order, so reports do not depend on scheduling. The mock
+  benchmark drops from about 60 s to about 17 s with 8 workers. Wall times per
+  task grow under contention, so compare wall time only between runs with the
+  same worker count.
 - **Mock is the default provider everywhere.** Live runs need an explicit flag,
   so nobody spends money by accident.
 
@@ -175,14 +181,12 @@ Each has a longer write-up in [`docs/adr/`](docs/adr) and
 - The 20 tasks are small, single-bug, single-file fixes. They are a harness
   test bed, not a hard benchmark.
 - `wrong_file` assumes the reference fix's files are the only right ones.
-- Tasks run one at a time.
 
 ## What I'd do next
 
-1. Parallel task execution in the harness (`--workers N`).
-2. Optional LLM-written history summaries, with the extractive digest as the
+1. Optional LLM-written history summaries, with the extractive digest as the
    fallback.
-3. Run the live benchmark for both strategies and commit the results.
+2. Run the live benchmark for both strategies and commit the results.
 
 ## Project layout
 

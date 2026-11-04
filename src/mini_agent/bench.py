@@ -18,6 +18,7 @@ import os
 import tempfile
 import time
 from collections import Counter
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
@@ -360,13 +361,24 @@ def run_benchmark(
     config: AgentConfig,
     replay_dir: Path | None = None,
     samples: int = 1,
+    workers: int = 1,
 ) -> list[TaskResult]:
-    results = [
-        run_task(task, provider_name, strategy, out_dir, config, replay_dir, sample, samples)
+    jobs = [
+        (task, strategy, sample)
         for strategy in strategies
         for task in tasks
         for sample in range(1, samples + 1)
     ]
+
+    def run(job: tuple[Task, str, int]) -> TaskResult:
+        task, strategy, sample = job
+        return run_task(task, provider_name, strategy, out_dir, config, replay_dir, sample, samples)
+
+    # Threads are enough: the work is waiting on pytest subprocesses and model calls,
+    # and every run has its own provider, temp workspace and trajectory file.
+    # `map` keeps results in job order, so reports do not depend on scheduling.
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        results = list(pool.map(run, jobs))
     mode = MODES[provider_name]
     summary = summarise_results(results)
     payload = {

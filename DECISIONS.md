@@ -134,3 +134,12 @@ considered, why.
 - **Why:** the naive estimate is biased upward and has high variance; the
   combinatorial estimator is the standard one from the Codex paper and is
   exact for k = n.
+
+## D15. Parallelism with a thread pool
+- **Decision:** `run_benchmark(workers=N)` uses `ThreadPoolExecutor.map`.
+- **Alternatives:** a process pool; asyncio.
+- **Why:** runs spend their time in pytest subprocesses and network calls, so
+  the GIL is not the bottleneck; threads need no pickling and share nothing
+  mutable (each run owns its provider, workspace and trajectory file). `map`
+  preserves job order, so results files are identical to a serial run except
+  for wall times.

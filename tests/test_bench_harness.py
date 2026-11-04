@@ -164,3 +164,16 @@ def test_several_samples_per_task(tmp_path: Path) -> None:
     assert summary["pass_at_1"] == pytest.approx(0.5)
     assert summary["pass_at_k"] == {"1": pytest.approx(0.5), "3": pytest.approx(0.5)}
     assert "pass@3" in (tmp_path / "results.md").read_text()
+
+
+def test_parallel_workers_give_the_same_results_in_the_same_order(tmp_path: Path) -> None:
+    tasks = [t for t in load_tasks(TASKS_DIR) if t.id[:2] in {"01", "04", "07", "13"}]
+    serial = run_benchmark(tasks, "mock", ["direct"], tmp_path / "serial", AgentConfig())
+    parallel = run_benchmark(
+        tasks, "mock", ["direct"], tmp_path / "parallel", AgentConfig(), workers=4
+    )
+
+    def key(r: object) -> tuple[object, ...]:
+        return (r.task_id, r.sample, r.passed, r.failure, r.steps, r.input_tokens)  # type: ignore[attr-defined]
+
+    assert [key(r) for r in parallel] == [key(r) for r in serial]

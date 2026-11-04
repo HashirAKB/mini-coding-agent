@@ -51,7 +51,6 @@ and nothing about the agent's ability.
 - `run_tests` runs agent-written code on the host unless you use Docker.
 - Tasks are small and mostly single-file; pass@1 from one sample is noisy.
 - `wrong_file` assumes the reference fix's files are the only correct ones.
-- Tasks run sequentially.
 
 ## Resume bullets (honest)
 

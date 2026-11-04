@@ -93,6 +93,7 @@ def main(argv: list[str] | None = None) -> int:
     bench.add_argument("--out", type=Path, help="default: bench/results/<mock|live|replay>")
     bench.add_argument("--replay-dir", type=Path, help="recorded run to replay (--provider replay)")
     bench.add_argument("--samples", type=int, default=1, help="runs per task, for pass@k")
+    bench.add_argument("--workers", type=int, default=1, help="tasks to run in parallel")
     bench.add_argument(
         "--min-pass-rate",
         type=float,
@@ -136,7 +137,14 @@ def main(argv: list[str] | None = None) -> int:
     tasks = _select(tasks, args.tasks)
     args.out = args.out or Path("bench/results") / MODES[args.provider]
     results = run_benchmark(
-        tasks, args.provider, strategies, args.out, config, args.replay_dir, args.samples
+        tasks,
+        args.provider,
+        strategies,
+        args.out,
+        config,
+        args.replay_dir,
+        args.samples,
+        args.workers,
     )
     print((args.out / "results.md").read_text())
     print(f"{len(results)} runs written to {args.out}")
