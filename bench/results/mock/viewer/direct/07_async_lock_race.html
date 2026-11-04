@@ -57,9 +57,9 @@ __________________________ test_concurrent_increments __________________________
     
 &gt;       assert asyncio.run(main()) == 50
 E       assert 1 == 50
-E        +  where 1 = &lt;function run at 0x7f42137d4c20&gt;(&lt;coroutine object test_concurrent_increments.&lt;locals&gt;.main at 0x7f42134d91c0&gt;)
-E        +    where &lt;function run at 0x7f42137d4c20&gt; = asyncio.run
-E        +    and   &lt;coroutine object test_concurrent_increments.&lt;locals&gt;.main at 0x7f42134d91c0&gt; = &lt;function test_concurrent_increments.&lt;locals&gt;.main at 0x7f42134d0c20&gt;()
+E        +  where 1 = &lt;function run at 0x7ffa2e9b0c20&gt;(&lt;coroutine object test_concurrent_increments.&lt;locals&gt;.main at 0x7ffa2e6c11c0&gt;)
+E        +    where &lt;function run at 0x7ffa2e9b0c20&gt; = asyncio.run
+E        +    and   &lt;coroutine object test_concurrent_increments.&lt;locals&gt;.main at 0x7ffa2e6c11c0&gt; = &lt;function test_concurrent_increments.&lt;locals&gt;.main at 0x7ffa2e6bcc20&gt;()
 
 tests/test_counter.py:12: AssertionError
 =========================== short test summary info ============================
@@ -120,9 +120,9 @@ _____________________________ test_many_increments _____________________________
     
 &gt;       assert asyncio.run(main()) == 200
 E       assert 1 == 200
-E        +  where 1 = &lt;function run at 0x7fe46cd48c20&gt;(&lt;coroutine object test_many_increments.&lt;locals&gt;.main at 0x7fe46ca5da80&gt;)
-E        +    where &lt;function run at 0x7fe46cd48c20&gt; = asyncio.run
-E        +    and   &lt;coroutine object test_many_increments.&lt;locals&gt;.main at 0x7fe46ca5da80&gt; = &lt;function test_many_increments.&lt;locals&gt;.main at 0x7fe46ca54ea0&gt;()
+E        +  where 1 = &lt;function run at 0x7fb7fb92cc20&gt;(&lt;coroutine object test_many_increments.&lt;locals&gt;.main at 0x7fb7fb631a80&gt;)
+E        +    where &lt;function run at 0x7fb7fb92cc20&gt; = asyncio.run
+E        +    and   &lt;coroutine object test_many_increments.&lt;locals&gt;.main at 0x7fb7fb631a80&gt; = &lt;function test_many_increments.&lt;locals&gt;.main at 0x7fb7fb62cea0&gt;()
 
 hidden_tests/test_counter_hidden.py:12: AssertionError
 ________________________ test_counters_are_independent _________________________

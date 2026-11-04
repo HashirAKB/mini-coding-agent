@@ -111,8 +111,7 @@ class Agent:
             except Exception as error:  # network, rate limit, bad request, exhausted replay
                 # One failed call should end this run, not the whole benchmark.
                 return stop("provider_error", step - 1, None, f"{type(error).__name__}: {error}")
-            usage.input_tokens += response.usage.input_tokens
-            usage.output_tokens += response.usage.output_tokens
+            usage.add(response.usage)
             messages.append(
                 Message("assistant", response.text, response.tool_calls, raw=response.raw)
             )

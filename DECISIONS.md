@@ -93,3 +93,25 @@ considered, why.
 - **Why:** the scripted oracle's expected score is known (15/20). A drop means
   a regression in tools, patching, evaluation or tasks, which is exactly what
   the mock run is for.
+
+## D11. Vendor names appear only where they name the API being called
+- **Decision:** "Anthropic" and "Claude" appear only where the code talks to
+  that API (`AnthropicProvider`, `providers/anthropic.py`, `ANTHROPIC_API_KEY`,
+  model ids, notes on how that API treats thinking blocks). No commit, comment
+  or document credits AI assistance.
+- **Alternatives:** rename the provider to something vendor-neutral such as
+  `LiveProvider`.
+- **Why:** the spec itself names `AnthropicProvider` and `ANTHROPIC_API_KEY`;
+  the no-mention rule is about authorship attribution, and hiding which API
+  the live provider calls would make the code harder to understand.
+
+## D12. Top-level automatic prompt caching in live mode
+- **Decision:** the live provider sends top-level `cache_control:
+  {"type": "ephemeral"}` on every request (switchable off) and records cache
+  read and write tokens separately; `cost_usd` prices each kind at its own rate.
+- **Alternatives:** manual `cache_control` breakpoints on the last message
+  block; no caching.
+- **Why:** an agent loop re-sends a growing, append-only prefix every step,
+  which is the best case for caching. The automatic form needs no block
+  bookkeeping and keeps the provider code short. Without separate cache
+  accounting, cost reports would be overstated by up to 20x on cached tokens.

@@ -146,6 +146,11 @@ Each has a longer write-up in [`docs/adr/`](docs/adr) and
 - **Append-only conversations.** One system prompt and one tool list for the
   whole run (the plan strategy plans in its first turn rather than in a
   separate call), so prompt caching and thinking-block replay keep working.
+- **Prompt caching in live mode.** The conversation is append-only, so each
+  request's prefix was already sent on the previous step; top-level
+  `cache_control` lets the API bill it at the cache-read rate (0.05x input on
+  `claude-opus-5-5`). Cache reads and writes are tracked and priced separately.
+  Summarisation resets the cache once, which is the price of a smaller context.
 - **Mock is the default provider everywhere.** Live runs need an explicit flag,
   so nobody spends money by accident.
 
@@ -166,14 +171,12 @@ Each has a longer write-up in [`docs/adr/`](docs/adr) and
 
 ## What I'd do next
 
-1. Prompt caching in the live provider (a cache breakpoint on the growing
-   conversation) to cut input cost on long loops.
-2. Retries with exponential backoff for rate-limit and overload errors.
-3. pass@k: several samples per task and the unbiased pass@k estimator.
-4. Parallel task execution in the harness (`--workers N`).
-5. Optional LLM-written history summaries, with the extractive digest as the
+1. Retries with exponential backoff for rate-limit and overload errors.
+2. pass@k: several samples per task and the unbiased pass@k estimator.
+3. Parallel task execution in the harness (`--workers N`).
+4. Optional LLM-written history summaries, with the extractive digest as the
    fallback.
-6. Run the live benchmark for both strategies and commit the results.
+5. Run the live benchmark for both strategies and commit the results.
 
 ## Project layout
 

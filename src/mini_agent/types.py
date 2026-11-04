@@ -37,12 +37,20 @@ class ToolResult:
 
 @dataclass
 class Usage:
-    input_tokens: int = 0
+    input_tokens: int = 0  # every input token, including the cached ones below
     output_tokens: int = 0
+    cache_read_tokens: int = 0  # part of input_tokens served from the prompt cache
+    cache_write_tokens: int = 0  # part of input_tokens written to the prompt cache
 
     @property
     def total(self) -> int:
         return self.input_tokens + self.output_tokens
+
+    def add(self, other: Usage) -> None:
+        self.input_tokens += other.input_tokens
+        self.output_tokens += other.output_tokens
+        self.cache_read_tokens += other.cache_read_tokens
+        self.cache_write_tokens += other.cache_write_tokens
 
 
 @dataclass

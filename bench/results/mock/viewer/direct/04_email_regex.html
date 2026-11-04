@@ -53,7 +53,7 @@ E        +  where False = is_valid_email(&#x27;john.doe+news@example.com&#x27;)
 tests/test_email.py:5: AssertionError
 =========================== short test summary info ============================
 FAILED tests/test_email.py::test_plus_and_dot_are_allowed - AssertionError: a...
-1 failed, 1 passed in 0.02s</pre></section><section class='step'><h2>Step 4</h2><p class='meta'>context estimate 994 tokens; usage in/out 994/70</p><p class='thought'>Making the failing case pass.</p><p><strong>apply_patch</strong> {}</p><pre><strong>--- a/validators/email.py</strong>
+1 failed, 1 passed in 0.01s</pre></section><section class='step'><h2>Step 4</h2><p class='meta'>context estimate 994 tokens; usage in/out 994/70</p><p class='thought'>Making the failing case pass.</p><p><strong>apply_patch</strong> {}</p><pre><strong>--- a/validators/email.py</strong>
 <strong>+++ b/validators/email.py</strong>
 <span class="hunk">@@ -4,4 +4,6 @@</span>
  

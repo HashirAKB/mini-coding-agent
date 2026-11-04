@@ -8,6 +8,13 @@ back. Two details matter for agents on current Claude models:
   degrades reasoning, and replaying edited ones is rejected by the API.
 - Tool results go back as `tool_result` blocks in the next user message, all
   results of one turn in a single message.
+
+Prompt caching: an agent re-sends its whole history on every step, so almost
+all input tokens of step n were already sent at step n - 1. With top-level
+`cache_control` the API caches the longest prefix it has seen and bills those
+tokens at a small fraction of the input price. Because the conversation is
+append-only, the prefix stays valid from step to step; a summarisation resets
+it once.
 """
 
 from __future__ import annotations
@@ -67,6 +74,7 @@ class AnthropicProvider:
         max_tokens: int = 16000,
         effort: str = "high",
         server_fallback: bool = True,
+        prompt_caching: bool = True,
         client: Any = None,
     ) -> None:
         if client is None:
@@ -78,6 +86,7 @@ class AnthropicProvider:
         self.max_tokens = max_tokens
         self.effort = effort
         self.server_fallback = server_fallback
+        self.prompt_caching = prompt_caching
 
     def complete(
         self, system: str, messages: Sequence[Message], tools: Sequence[ToolSpec]
@@ -90,6 +99,8 @@ class AnthropicProvider:
                 "extra_headers": {"anthropic-beta": "server-side-fallback-2026-07-01"},
                 "extra_body": {"fallbacks": "default"},
             }
+        if self.prompt_caching:
+            extra["cache_control"] = {"type": "ephemeral"}
         response = self.client.messages.create(
             model=self.model,
             max_tokens=self.max_tokens,
@@ -105,15 +116,17 @@ class AnthropicProvider:
             ToolCall(b.id, b.name, dict(b.input)) for b in response.content if b.type == "tool_use"
         ]
         usage = response.usage
-        input_tokens = (
-            usage.input_tokens
-            + (getattr(usage, "cache_read_input_tokens", 0) or 0)
-            + (getattr(usage, "cache_creation_input_tokens", 0) or 0)
-        )
+        cache_read = getattr(usage, "cache_read_input_tokens", 0) or 0
+        cache_write = getattr(usage, "cache_creation_input_tokens", 0) or 0
         return ModelResponse(
             text=text,
             tool_calls=calls,
-            usage=Usage(input_tokens, usage.output_tokens),
+            usage=Usage(
+                input_tokens=usage.input_tokens + cache_read + cache_write,
+                output_tokens=usage.output_tokens,
+                cache_read_tokens=cache_read,
+                cache_write_tokens=cache_write,
+            ),
             stop_reason=response.stop_reason or "",
             raw=[b.model_dump(mode="json", exclude_none=True) for b in response.content],
         )

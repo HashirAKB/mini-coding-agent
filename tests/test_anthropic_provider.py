@@ -100,3 +100,21 @@ def test_request_and_response_mapping() -> None:
     assert result.usage.output_tokens == 30
     assert result.raw is not None and result.raw[0]["type"] == "thinking"
     assert result.stop_reason == "tool_use"
+
+
+def test_prompt_caching_is_requested_and_cache_usage_is_tracked() -> None:
+    usage = FakeUsage(input_tokens=100, cache_read_input_tokens=900, cache_creation_input_tokens=50)
+    client = FakeClient(
+        FakeResponse([FakeBlock({"type": "text", "text": "ok"})], "end_turn", usage)
+    )
+    result = AnthropicProvider(client=client).complete("s", [Message("user", text="hi")], [])
+    assert client.messages.requests[0]["cache_control"] == {"type": "ephemeral"}
+    assert result.usage.input_tokens == 1050  # every input token, cached or not
+    assert result.usage.cache_read_tokens == 900
+    assert result.usage.cache_write_tokens == 50
+
+
+def test_caching_can_be_switched_off() -> None:
+    client = FakeClient(FakeResponse([FakeBlock({"type": "text", "text": "ok"})], "end_turn"))
+    AnthropicProvider(client=client, prompt_caching=False).complete("s", [], [])
+    assert "cache_control" not in client.messages.requests[0]

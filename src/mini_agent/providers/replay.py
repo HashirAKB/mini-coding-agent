@@ -48,7 +48,7 @@ def response_from_event(step: dict[str, Any]) -> ModelResponse:
     return ModelResponse(
         text=step["text"],
         tool_calls=[ToolCall(c["id"], c["name"], c["args"]) for c in step["tool_calls"]],
-        usage=Usage(step["usage"]["input_tokens"], step["usage"]["output_tokens"]),
+        usage=Usage(**step["usage"]),
         stop_reason=step.get("model_stop_reason", ""),
         raw=step.get("raw"),
     )

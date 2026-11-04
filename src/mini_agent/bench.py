@@ -30,11 +30,15 @@ from mini_agent.providers.scripted import ScriptedProvider
 from mini_agent.tasks import HIDDEN_DIR_NAME, Task, prepare_workspace, run_suite
 from mini_agent.tools import IGNORED_NAMES, ToolBox
 from mini_agent.trajectory import TrajectoryWriter, read_trajectory
+from mini_agent.types import Usage
 from mini_agent.workspace import Workspace
 
-# USD per million tokens (input, output). Mock runs are priced as if they had
-# used the default live model, and their token counts are chars/4 estimates.
-PRICES_PER_MTOK = {DEFAULT_MODEL: (4.0, 20.0)}
+# USD per million tokens. Mock runs are priced as if they had used the default
+# live model, and their token counts are chars/4 estimates. Cache writes are
+# the 5-minute TTL price (1.25x input); cache reads are 0.05x input on this model.
+PRICES_PER_MTOK = {
+    DEFAULT_MODEL: {"input": 4.00, "output": 20.00, "cache_read": 0.20, "cache_write": 5.00},
+}
 
 # Which scripted behaviour each task gets in mock mode. Faults are injected on
 # purpose so that every failure category shows up. See providers/scripted.py.
@@ -88,6 +92,7 @@ class TaskResult:
     steps: int
     input_tokens: int
     output_tokens: int
+    cache_read_tokens: int
     cost_usd: float
     wall_seconds: float
     changed_files: list[str]
@@ -177,9 +182,15 @@ def make_provider(provider: str, task: Task, strategy: str, replay_dir: Path | N
     raise ValueError(f"Unknown provider {provider!r}")
 
 
-def cost_usd(model: str, input_tokens: int, output_tokens: int) -> float:
-    input_price, output_price = PRICES_PER_MTOK.get(model, PRICES_PER_MTOK[DEFAULT_MODEL])
-    return (input_tokens * input_price + output_tokens * output_price) / 1_000_000
+def cost_usd(model: str, usage: Usage) -> float:
+    price = PRICES_PER_MTOK.get(model, PRICES_PER_MTOK[DEFAULT_MODEL])
+    uncached = usage.input_tokens - usage.cache_read_tokens - usage.cache_write_tokens
+    return (
+        uncached * price["input"]
+        + usage.cache_read_tokens * price["cache_read"]
+        + usage.cache_write_tokens * price["cache_write"]
+        + usage.output_tokens * price["output"]
+    ) / 1_000_000
 
 
 def run_task(
@@ -237,7 +248,8 @@ def run_task(
         steps=result.steps,
         input_tokens=result.usage.input_tokens,
         output_tokens=result.usage.output_tokens,
-        cost_usd=cost_usd(provider.model, result.usage.input_tokens, result.usage.output_tokens),
+        cache_read_tokens=result.usage.cache_read_tokens,
+        cost_usd=cost_usd(provider.model, result.usage),
         wall_seconds=wall_seconds,
         changed_files=sorted(changed),
     )
@@ -255,6 +267,7 @@ def summarise_results(results: list[TaskResult]) -> dict[str, dict[str, Any]]:
             "pass_at_1": sum(r.passed for r in runs) / n,
             "avg_steps": sum(r.steps for r in runs) / n,
             "total_tokens": sum(tokens),
+            "cache_read_tokens": sum(r.cache_read_tokens for r in runs),
             "avg_tokens": sum(tokens) / n,
             "total_cost_usd": sum(r.cost_usd for r in runs),
             "avg_wall_seconds": sum(r.wall_seconds for r in runs) / n,

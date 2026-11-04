@@ -73,7 +73,7 @@ E   RecursionError: maximum recursion depth exceeded
 !!! Recursion detected (same locals &amp; position)
 =========================== short test summary info ============================
 FAILED tests/test_flat.py::test_strings_are_kept_whole - RecursionError: maxi...
-1 failed in 0.02s</pre></section><section class='step'><h2>Step 4</h2><p class='meta'>context estimate 1,169 tokens; usage in/out 1,169/98</p><p class='thought'>I see the bug; applying a fix.</p><p><strong>apply_patch</strong> {}</p><pre><strong>--- a/nested/flat.py</strong>
+1 failed in 0.03s</pre></section><section class='step'><h2>Step 4</h2><p class='meta'>context estimate 1,169 tokens; usage in/out 1,169/98</p><p class='thought'>I see the bug; applying a fix.</p><p><strong>apply_patch</strong> {}</p><pre><strong>--- a/nested/flat.py</strong>
 <strong>+++ b/nested/flat.py</strong>
 <span class="hunk">@@ -1,7 +1,7 @@</span>
  def flatten(items):

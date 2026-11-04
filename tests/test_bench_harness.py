@@ -121,3 +121,16 @@ def test_both_strategies_run_and_are_compared(tmp_path: Path) -> None:
     assert set(summary) == {"direct", "plan"}
     assert summary["plan"]["avg_steps"] == summary["direct"]["avg_steps"] + 1  # the plan turn
     assert "| plan |" in (tmp_path / "results.md").read_text()
+
+
+def test_cost_prices_cache_reads_and_writes_separately() -> None:
+    from mini_agent.bench import cost_usd
+    from mini_agent.types import Usage
+
+    plain = cost_usd("claude-opus-5-5", Usage(1_000_000, 0))
+    assert plain == pytest.approx(4.00)
+    cached = cost_usd("claude-opus-5-5", Usage(1_000_000, 0, cache_read_tokens=1_000_000))
+    assert cached == pytest.approx(0.20)
+    written = cost_usd("claude-opus-5-5", Usage(1_000_000, 0, cache_write_tokens=1_000_000))
+    assert written == pytest.approx(5.00)
+    assert cost_usd("claude-opus-5-5", Usage(0, 1_000_000)) == pytest.approx(20.00)
