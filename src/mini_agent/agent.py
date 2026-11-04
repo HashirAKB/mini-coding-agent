@@ -20,10 +20,13 @@ from mini_agent.context import (
     DEFAULT_HINT,
     TRUNCATION_HINTS,
     estimate_request_tokens,
-    summarise_history,
+    extractive_summary,
+    rebuild_history,
+    render_turns,
+    split_history,
     truncate_output,
 )
-from mini_agent.prompts import PLAN_ACK, STRATEGIES, task_prompt
+from mini_agent.prompts import PLAN_ACK, STRATEGIES, SUMMARISER_SYSTEM, task_prompt
 from mini_agent.providers.base import Provider
 from mini_agent.tools import TOOL_SPECS, ToolBox
 from mini_agent.trajectory import TrajectoryWriter
@@ -38,6 +41,7 @@ class AgentConfig:
     context_limit_tokens: int = 100_000  # our working budget for one request
     summarise_at: float = 0.75  # summarise old turns above this share of the limit
     keep_recent_turns: int = 4  # assistant turns kept verbatim when summarising
+    summariser: str = "extractive"  # "extractive" (rules, free) or "model" (one extra call)
     max_observation_chars: int = 8_000  # longer tool outputs are truncated
 
 
@@ -105,7 +109,7 @@ class Agent:
             if usage.total >= self.config.max_total_tokens:
                 return stop("token_budget", step - 1)
 
-            context_tokens = self._manage_context(step, messages)
+            context_tokens = self._manage_context(step, messages, usage)
             try:
                 response = self.provider.complete(self.system, messages, TOOL_SPECS)
             except Exception as error:  # network, rate limit, bad request, exhausted replay
@@ -142,25 +146,44 @@ class Agent:
 
         return stop("max_steps", self.config.max_steps)
 
-    def _manage_context(self, step: int, messages: list[Message]) -> int:
+    def _manage_context(self, step: int, messages: list[Message], usage: Usage) -> int:
         """Summarise old turns if the next request would be too big. Returns its size."""
         tokens = estimate_request_tokens(self.system, messages, TOOL_SPECS)
         if tokens <= self.config.context_limit_tokens * self.config.summarise_at:
             return tokens
-        summarised = summarise_history(messages, self.config.keep_recent_turns)
-        if summarised is messages:
+        split = split_history(messages, self.config.keep_recent_turns)
+        if split is None:
             return tokens  # nothing old enough to summarise
-        messages[:] = summarised
+        old, recent = split
+        event: dict[str, Any] = {"type": "context_summarised", "step": step}
+        summary = ""
+        if self.config.summariser == "model":
+            summary, event["fallback_reason"] = self._model_summary(old, event, usage)
+        event["summariser"] = "model" if summary else "extractive"
+        summary = summary or extractive_summary(old)
+        messages[:] = rebuild_history(messages[0], summary, recent)
         after = estimate_request_tokens(self.system, messages, TOOL_SPECS)
-        self._record(
-            {
-                "type": "context_summarised",
-                "step": step,
-                "tokens_before": tokens,
-                "tokens_after": after,
-            }
-        )
+        self._record({**event, "tokens_before": tokens, "tokens_after": after, "summary": summary})
         return after
+
+    def _model_summary(
+        self, old: list[Message], event: dict[str, Any], usage: Usage
+    ) -> tuple[str, str]:
+        """Ask the model to summarise `old` in a separate request.
+
+        Returns (summary, fallback_reason). An empty summary means "use the
+        extractive one", so a failed or empty summary call never breaks the run.
+        """
+        request = [Message("user", text=render_turns(old))]
+        try:
+            response = self.provider.complete(SUMMARISER_SYSTEM, request, [])
+        except Exception as error:
+            return "", f"{type(error).__name__}: {error}"
+        usage.add(response.usage)  # summaries cost tokens too
+        event["usage"] = asdict(response.usage)
+        if not response.text.strip():
+            return "", "empty summary"
+        return response.text.strip(), ""
 
     def _record_step(
         self,

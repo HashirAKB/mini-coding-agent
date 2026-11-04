@@ -21,7 +21,7 @@ from collections.abc import Iterator, Sequence
 
 from mini_agent.context import estimate_request_tokens, estimate_tokens
 from mini_agent.patch import parse_patch
-from mini_agent.prompts import PLAN_INSTRUCTION
+from mini_agent.prompts import PLAN_INSTRUCTION, SUMMARISER_SYSTEM
 from mini_agent.tools import ToolSpec
 from mini_agent.types import Message, ModelResponse, ToolCall, ToolResult, Usage
 
@@ -83,6 +83,8 @@ class ScriptedProvider:
     def complete(
         self, system: str, messages: Sequence[Message], tools: Sequence[ToolSpec]
     ) -> ModelResponse:
+        if system == SUMMARISER_SYSTEM:
+            return self._summary(messages)
         self.last_results = messages[-1].tool_results if messages else []
         if self._turns is None:
             self._turns = self._policy(plan_first=PLAN_INSTRUCTION in system)
@@ -90,6 +92,14 @@ class ScriptedProvider:
         output = text + "".join(call.name + str(call.args) for call in calls)
         usage = Usage(estimate_request_tokens(system, messages, tools), estimate_tokens(output))
         return ModelResponse(text, calls, usage, stop_reason="tool_use" if calls else "end_turn")
+
+    def _summary(self, messages: Sequence[Message]) -> ModelResponse:
+        """A canned stand-in for a model-written summary (it does not use the policy)."""
+        text = messages[0].text
+        calls = [line for line in text.splitlines() if line.startswith("CALL ")]
+        summary = f"- (scripted summary) {len(calls)} earlier tool calls, last: {calls[-1][5:]}"
+        usage = Usage(estimate_tokens(SUMMARISER_SYSTEM + text), estimate_tokens(summary))
+        return ModelResponse(summary, [], usage, stop_reason="end_turn")
 
     # ---- helpers ---------------------------------------------------------------
 

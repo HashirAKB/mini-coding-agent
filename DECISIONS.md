@@ -143,3 +143,17 @@ considered, why.
   mutable (each run owns its provider, workspace and trajectory file). `map`
   preserves job order, so results files are identical to a serial run except
   for wall times.
+
+## D16. Model-written summaries as an opt-in with a guaranteed fallback
+- **Decision:** `AgentConfig.summariser = "model"` sends the old turns (rendered
+  as text, outputs capped) to the same provider with a dedicated system prompt
+  and no tools, in a separate request. Its usage counts towards the run's
+  budget. A failure or empty answer falls back to the extractive digest and the
+  reason is recorded. The scripted mock returns a canned summary; replay
+  returns the recorded ones.
+- **Alternatives:** summarise inside the main conversation (ask the agent to
+  summarise itself); server-side compaction.
+- **Why:** a separate request keeps the main conversation append-only and its
+  system prompt and tools stable. The fallback keeps summarisation from ever
+  being a new way for a run to fail. Server-side compaction is tied to one
+  vendor and cannot be exercised offline.

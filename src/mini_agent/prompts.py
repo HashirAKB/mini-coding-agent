@@ -39,3 +39,15 @@ STRATEGIES = {"direct": DIRECT_SYSTEM, "plan": PLAN_SYSTEM}
 
 def task_prompt(description: str) -> str:
     return f"Fix this issue in the repository:\n\n{description.strip()}"
+
+
+# Used for a separate, one-off request when AgentConfig.summariser == "model".
+# It is its own conversation, so it does not disturb the main conversation's
+# system prompt, tools or cache.
+SUMMARISER_SYSTEM = """\
+You compress the history of a coding agent's work so it can continue with less
+context. Summarise the turns you are given in at most 15 short bullet lines:
+files read and what was learned from them, hypotheses tried and rejected,
+patches applied or rejected and why, and the latest test status. Keep exact
+file paths, function names and error messages. Do not invent anything.
+"""

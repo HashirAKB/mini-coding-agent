@@ -71,7 +71,10 @@ This repo manages context at two levels (`context.py`):
   start_line"). The marker matters: silently cut output misleads the model.
 - **Per request: summarisation.** When the estimated request size passes 75%
   of the budget, old turns are replaced by a one-line-per-tool-call digest,
-  appended to the task message. The last few turns are kept verbatim because
+  appended to the task message (`split_history`, `extractive_summary`,
+  `rebuild_history`). With `--summariser model` the agent instead asks the
+  model for the summary in a separate request and falls back to the digest if
+  that fails. The last few turns are kept verbatim because
   the agent usually needs the exact text of what it just read.
 
 Token counting is estimated as characters / 4 (`estimate_tokens`). It is
@@ -304,15 +307,15 @@ noise.
 
 **14. Why is cost quadratic in steps, and what would you do about it?**
 Each call re-sends the whole history, so total input tokens is the sum over
-steps of the history length. Mitigations: truncation and summarisation (done),
-prompt caching of the stable prefix (next step), and fewer steps via better
+steps of the history length. Mitigations: truncation and summarisation, prompt
+caching of the append-only prefix (`cache_control` in `providers/anthropic.py`,
+cache reads billed at 0.05x input), and fewer steps via better
 tools (for example `read_file` returning only the needed range).
 
 **15. What are the weaknesses of this benchmark?**
 20 small single-bug tasks, mostly single-file; `wrong_file` assumes the
 reference fix's files are the only right ones; pass@1 on one sample has high
-variance; mock mode measures nothing about ability; no live results committed;
-tasks run sequentially.
+variance; mock mode measures nothing about ability; no live results committed.
 
 ---
 

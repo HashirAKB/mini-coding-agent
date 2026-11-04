@@ -118,9 +118,12 @@ def render_trajectory(events: list[dict[str, Any]]) -> str:
             body.append(_render_step(event))
         elif kind == "context_summarised":
             body.append(
-                f"<p class='note'>Before step {event['step']}: history summarised, "
+                f"<p class='note'>Before step {event['step']}: history summarised "
+                f"({escape(event.get('summariser', 'extractive'))}), "
                 f"{event['tokens_before']:,} to {event['tokens_after']:,} estimated tokens.</p>"
             )
+            if event.get("summary"):
+                body.append(f"<pre>{escape(event['summary'])}</pre>")
         elif kind == "run_end":
             body.append(
                 f"<h2>Stop</h2><p>{escape(event['stop_reason'])} after {event['steps']} steps "

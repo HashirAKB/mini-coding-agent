@@ -112,6 +112,57 @@ def _without_thinking(message: Message) -> Message:
     return Message(message.role, message.text, message.tool_calls, message.tool_results, kept)
 
 
+def split_history(
+    messages: list[Message], keep_recent_turns: int
+) -> tuple[list[Message], list[Message]] | None:
+    """Split [task, *turns] into (old turns, recent turns), cutting before an assistant turn.
+
+    Returns None when there are not more than `keep_recent_turns` turns, i.e.
+    nothing old enough to summarise. Cutting just before an assistant message
+    keeps every tool call together with its results.
+    """
+    assistant_positions = [i for i, m in enumerate(messages) if m.role == "assistant"]
+    if len(assistant_positions) <= keep_recent_turns:
+        return None
+    cut = assistant_positions[-keep_recent_turns] if keep_recent_turns else len(messages)
+    return messages[1:cut], messages[cut:]
+
+
+def extractive_summary(old: list[Message]) -> str:
+    """One line per thought and per tool call: what was called and whether it worked."""
+    digests = []
+    for i, message in enumerate(old):
+        if message.role == "assistant":
+            following = old[i + 1] if i + 1 < len(old) else None
+            digests.append(_digest(message, following))
+        elif message.text and not message.tool_results:
+            digests.append(f"- user: {_first_line(message.text)}")
+    return "\n".join(digests)
+
+
+def render_turns(old: list[Message], max_output_chars: int = 1_500) -> str:
+    """Old turns as plain text, for a model to summarise (outputs are capped)."""
+    lines: list[str] = []
+    for message in old:
+        if message.role == "assistant":
+            if message.text.strip():
+                lines.append(f"ASSISTANT: {message.text.strip()}")
+            lines += [f"CALL {_describe_call(c.name, c.args)}" for c in message.tool_calls]
+        else:
+            if message.text.strip():
+                lines.append(f"USER: {message.text.strip()}")
+            for result in message.tool_results:
+                label = "[error]" if result.is_error else "[ok]"
+                lines.append(f"RESULT {label}\n{truncate_output(result.output, max_output_chars)}")
+    return "\n".join(lines)
+
+
+def rebuild_history(task: Message, summary: str, recent: list[Message]) -> list[Message]:
+    """[task + summary, *recent], with thinking blocks dropped from the recent turns."""
+    first = Message("user", text=f"{task.text}\n\n{SUMMARY_HEADER}\n{summary}")
+    return [first, *[_without_thinking(m) for m in recent]]
+
+
 def summarise_history(messages: list[Message], keep_recent_turns: int) -> list[Message]:
     """Replace old turns with a short extractive summary appended to the task message.
 
@@ -125,19 +176,12 @@ def summarise_history(messages: list[Message], keep_recent_turns: int) -> list[M
     - Thinking blocks are dropped from retained turns: they were produced with
       the full history present, and the API rejects replaying them once the
       history before them has changed. Text and tool calls are kept.
+
+    The agent can use a model-written summary instead (AgentConfig.summariser);
+    it uses the same split_history / rebuild_history steps.
     """
-    assistant_positions = [i for i, m in enumerate(messages) if m.role == "assistant"]
-    if len(assistant_positions) <= keep_recent_turns:
+    split = split_history(messages, keep_recent_turns)
+    if split is None:
         return messages
-    cut = assistant_positions[-keep_recent_turns] if keep_recent_turns else len(messages)
-    old, recent = messages[1:cut], messages[cut:]
-    digests = []
-    for i, message in enumerate(old):
-        if message.role == "assistant":
-            following = old[i + 1] if i + 1 < len(old) else None
-            digests.append(_digest(message, following))
-        elif message.text and not message.tool_results:
-            digests.append(f"- user: {_first_line(message.text)}")
-    summary = "\n".join([SUMMARY_HEADER, *digests])
-    first = Message("user", text=f"{messages[0].text}\n\n{summary}")
-    return [first, *[_without_thinking(m) for m in recent]]
+    old, recent = split
+    return rebuild_history(messages[0], extractive_summary(old), recent)

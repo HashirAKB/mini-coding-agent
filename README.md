@@ -165,6 +165,12 @@ Each has a longer write-up in [`docs/adr/`](docs/adr) and
   benchmark drops from about 60 s to about 17 s with 8 workers. Wall times per
   task grow under contention, so compare wall time only between runs with the
   same worker count.
+- **Model-written summaries are optional.** `--summariser model` asks the
+  model to compress old turns in a separate one-off request (so the main
+  conversation's system prompt, tools and cache are untouched). Its tokens count
+  towards the budget, and if the call fails or returns nothing the rule-based
+  digest is used instead, so summarisation can never break a run. Replay
+  reproduces recorded summaries too.
 - **Mock is the default provider everywhere.** Live runs need an explicit flag,
   so nobody spends money by accident.
 
@@ -184,9 +190,7 @@ Each has a longer write-up in [`docs/adr/`](docs/adr) and
 
 ## What I'd do next
 
-1. Optional LLM-written history summaries, with the extractive digest as the
-   fallback.
-2. Run the live benchmark for both strategies and commit the results.
+1. Run the live benchmark for both strategies and commit the results.
 
 ## Project layout
 

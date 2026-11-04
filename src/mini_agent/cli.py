@@ -51,7 +51,7 @@ def format_trajectory(events: list[dict[str, Any]]) -> str:
                     out.append(_indent(observation["output"], limit=6))
         elif event["type"] == "context_summarised":
             out.append(
-                f"[context] summarised history: {event['tokens_before']} -> "
+                f"[context] {event['summariser']} summary: {event['tokens_before']} -> "
                 f"{event['tokens_after']} tokens"
             )
         elif event["type"] == "run_end":
@@ -108,6 +108,12 @@ def main(argv: list[str] | None = None) -> int:
     bench.add_argument("--provider", choices=list(MODES), default="mock")
     for command in (run, bench):
         command.add_argument("--max-steps", type=int, default=AgentConfig.max_steps)
+        command.add_argument(
+            "--summariser",
+            choices=["extractive", "model"],
+            default=AgentConfig.summariser,
+            help="how old turns are summarised near the context limit",
+        )
     run.add_argument("--strategy", choices=["direct", "plan"], default="direct")
     bench.add_argument("--strategy", choices=["direct", "plan", "both"], default="both")
 
@@ -121,7 +127,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"wrote {page}")
         return 0
 
-    config = AgentConfig(max_steps=args.max_steps)
+    config = AgentConfig(max_steps=args.max_steps, summariser=args.summariser)
     tasks = load_tasks(TASKS_DIR)
 
     if args.command in ("run", "demo"):

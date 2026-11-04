@@ -8,6 +8,7 @@ from mini_agent.context import (
     summarise_history,
     truncate_output,
 )
+from mini_agent.prompts import SUMMARISER_SYSTEM
 from mini_agent.providers.scripted import ScriptedProvider
 from mini_agent.tools import ToolBox
 from mini_agent.trajectory import TrajectoryWriter, read_trajectory
@@ -115,3 +116,72 @@ def test_loop_truncates_large_observations(workspace: Workspace) -> None:
     outputs = [r.output for m in result.messages for r in m.tool_results]
     assert any("truncated" in output for output in outputs)
     assert all(len(output) < 1300 for output in outputs)
+
+
+def test_history_helpers_compose_into_summarise_history() -> None:
+    from mini_agent.context import extractive_summary, rebuild_history, split_history
+
+    messages = conversation(10)
+    split = split_history(messages, keep_recent_turns=3)
+    assert split is not None
+    old, recent = split
+    assert old[0].text == "thought 0" and recent[0].text == "thought 7"
+    rebuilt = rebuild_history(messages[0], extractive_summary(old), recent)
+    assert rebuilt == summarise_history(messages, keep_recent_turns=3)
+    assert split_history(conversation(2), keep_recent_turns=3) is None
+
+
+def test_render_turns_gives_the_model_full_observations() -> None:
+    from mini_agent.context import render_turns
+
+    text = render_turns(conversation(3)[1:5])
+    assert "thought 0" in text and "out 0" in text and "read_file" in text
+    assert "[error]" in text  # step 2 failed
+
+
+def _model_summary_run(tmp_path: Path, workspace: Workspace, provider: object) -> list[dict]:  # type: ignore[type-arg]
+    path = tmp_path / "run.jsonl"
+    config = AgentConfig(
+        max_steps=15, context_limit_tokens=1500, keep_recent_turns=2, summariser="model"
+    )
+    with TrajectoryWriter(path) as writer:
+        Agent(provider, ToolBox(workspace), config, writer).run("fix it")  # type: ignore[arg-type]
+    return read_trajectory(path)
+
+
+def test_loop_can_use_a_model_written_summary(tmp_path: Path, workspace: Workspace) -> None:
+    events = _model_summary_run(tmp_path, workspace, ScriptedProvider(CALC_FIX, "budget"))
+    summaries = [e for e in events if e["type"] == "context_summarised"]
+    assert summaries and all(e["summariser"] == "model" for e in summaries)
+    assert all(e["summary"] and e["usage"]["input_tokens"] > 0 for e in summaries)
+    run_end = events[-1]
+    step_tokens = sum(e["usage"]["input_tokens"] for e in events if e["type"] == "step")
+    summary_tokens = sum(e["usage"]["input_tokens"] for e in summaries)
+    assert run_end["usage"]["input_tokens"] == step_tokens + summary_tokens
+
+
+def test_model_summary_falls_back_to_extractive(tmp_path: Path, workspace: Workspace) -> None:
+    class BrokenSummaries(ScriptedProvider):
+        def complete(self, system, messages, tools):  # type: ignore[no-untyped-def]
+            if system == SUMMARISER_SYSTEM:
+                raise TimeoutError("summary call failed")
+            return super().complete(system, messages, tools)
+
+    events = _model_summary_run(tmp_path, workspace, BrokenSummaries(CALC_FIX, "budget"))
+    summaries = [e for e in events if e["type"] == "context_summarised"]
+    assert summaries and all(e["summariser"] == "extractive" for e in summaries)
+    assert "TimeoutError" in summaries[0]["fallback_reason"]
+
+
+def test_replay_reproduces_a_run_with_model_summaries(tmp_path: Path, repo: Path) -> None:
+    from mini_agent.providers.replay import ReplayProvider
+
+    recorded = _model_summary_run(tmp_path, Workspace(repo), ScriptedProvider(CALC_FIX, "budget"))
+    replay = ReplayProvider.from_file(tmp_path / "run.jsonl")
+    (tmp_path / "again").mkdir()
+    events = _model_summary_run(tmp_path / "again", Workspace(repo), replay)
+
+    def strip(es: list[dict]) -> list[tuple[str, object]]:  # type: ignore[type-arg]
+        return [(e["type"], e.get("summary") or e.get("text")) for e in es]
+
+    assert strip(events) == strip(recorded)

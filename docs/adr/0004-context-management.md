@@ -26,7 +26,10 @@ and replaying the block is rejected by the API.
 ## Consequences
 - Deterministic and free (no model call), fully unit-tested offline.
 - The digest loses detail an LLM summary could keep (why a hypothesis was
-  rejected). Listed as future work.
+  rejected). Update: `AgentConfig.summariser = "model"` now asks the model for
+  the summary in a separate request (`prompts.SUMMARISER_SYSTEM`) and falls
+  back to the digest if that call fails or returns nothing. The digest stays
+  the default because it is free and deterministic.
 - chars/4 can be off by 20 to 30 percent for code. The limit is a working
   budget well below the model's real window, so the estimate only needs to be
   roughly right; live runs record real token counts from the API.
