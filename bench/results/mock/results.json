@@ -13,14 +13,19 @@
   "strategies": {
     "direct": {
       "tasks": 20,
+      "samples_per_task": 1,
+      "runs": 20,
       "passed": 15,
       "pass_at_1": 0.75,
+      "pass_at_k": {
+        "1": 0.75
+      },
       "avg_steps": 7.3,
       "total_tokens": 167604,
       "cache_read_tokens": 0,
       "avg_tokens": 8380.2,
       "total_cost_usd": 0.72968,
-      "avg_wall_seconds": 0.6876101856999867,
+      "avg_wall_seconds": 0.7596825255000113,
       "failures": {
         "test_overfit": 1,
         "broken_patch": 1,
@@ -31,14 +36,19 @@
     },
     "plan": {
       "tasks": 20,
+      "samples_per_task": 1,
+      "runs": 20,
       "passed": 15,
       "pass_at_1": 0.75,
+      "pass_at_k": {
+        "1": 0.75
+      },
       "avg_steps": 8.25,
       "total_tokens": 193831,
       "cache_read_tokens": 0,
       "avg_tokens": 9691.55,
       "total_cost_usd": 0.843948,
-      "avg_wall_seconds": 0.7586948300499898,
+      "avg_wall_seconds": 0.7586045388500224,
       "failures": {
         "test_overfit": 1,
         "broken_patch": 1,
@@ -53,6 +63,7 @@
       "task_id": "01_pagination_off_by_one",
       "category": "off-by-one",
       "strategy": "direct",
+      "sample": 1,
       "passed": true,
       "visible_passed": true,
       "hidden_passed": true,
@@ -63,7 +74,7 @@
       "output_tokens": 160,
       "cache_read_tokens": 0,
       "cost_usd": 0.025992,
-      "wall_seconds": 0.6614402019999943,
+      "wall_seconds": 0.8865672790002463,
       "changed_files": [
         "pager/core.py"
       ]
@@ -72,6 +83,7 @@
       "task_id": "02_moving_average_window",
       "category": "off-by-one",
       "strategy": "direct",
+      "sample": 1,
       "passed": true,
       "visible_passed": true,
       "hidden_passed": true,
@@ -82,7 +94,7 @@
       "output_tokens": 178,
       "cache_read_tokens": 0,
       "cost_usd": 0.025456,
-      "wall_seconds": 0.7321274279997851,
+      "wall_seconds": 0.8316887710002447,
       "changed_files": [
         "series/stats.py"
       ]
@@ -91,6 +103,7 @@
       "task_id": "03_median_even_length",
       "category": "edge case",
       "strategy": "direct",
+      "sample": 1,
       "passed": true,
       "visible_passed": true,
       "hidden_passed": true,
@@ -101,7 +114,7 @@
       "output_tokens": 310,
       "cache_read_tokens": 0,
       "cost_usd": 0.039296,
-      "wall_seconds": 0.6614508089996889,
+      "wall_seconds": 0.7501981850000448,
       "changed_files": [
         "numstats/central.py"
       ]
@@ -110,6 +123,7 @@
       "task_id": "04_email_regex",
       "category": "bad regex",
       "strategy": "direct",
+      "sample": 1,
       "passed": false,
       "visible_passed": true,
       "hidden_passed": false,
@@ -120,7 +134,7 @@
       "output_tokens": 147,
       "cache_read_tokens": 0,
       "cost_usd": 0.024604,
-      "wall_seconds": 0.6640241029999743,
+      "wall_seconds": 0.7467767430002823,
       "changed_files": [
         "validators/email.py"
       ]
@@ -129,6 +143,7 @@
       "task_id": "05_mutable_default_cart",
       "category": "mutable default argument",
       "strategy": "direct",
+      "sample": 1,
       "passed": true,
       "visible_passed": true,
       "hidden_passed": true,
@@ -139,7 +154,7 @@
       "output_tokens": 164,
       "cache_read_tokens": 0,
       "cost_usd": 0.02526,
-      "wall_seconds": 0.6977015070001471,
+      "wall_seconds": 0.7762842710003497,
       "changed_files": [
         "shop/orders.py"
       ]
@@ -148,6 +163,7 @@
       "task_id": "06_async_gather",
       "category": "async bug",
       "strategy": "direct",
+      "sample": 1,
       "passed": true,
       "visible_passed": true,
       "hidden_passed": true,
@@ -158,7 +174,7 @@
       "output_tokens": 165,
       "cache_read_tokens": 0,
       "cost_usd": 0.025552,
-      "wall_seconds": 0.7449661470000137,
+      "wall_seconds": 0.8011977090000073,
       "changed_files": [
         "fetcher/client.py"
       ]
@@ -167,6 +183,7 @@
       "task_id": "07_async_lock_race",
       "category": "async bug",
       "strategy": "direct",
+      "sample": 1,
       "passed": false,
       "visible_passed": false,
       "hidden_passed": false,
@@ -177,13 +194,14 @@
       "output_tokens": 317,
       "cache_read_tokens": 0,
       "cost_usd": 0.031716,
-      "wall_seconds": 0.43566403300019374,
+      "wall_seconds": 0.41886253699976805,
       "changed_files": []
     },
     {
       "task_id": "08_celsius_integer_division",
       "category": "wrong operator",
       "strategy": "direct",
+      "sample": 1,
       "passed": true,
       "visible_passed": true,
       "hidden_passed": true,
@@ -194,7 +212,7 @@
       "output_tokens": 134,
       "cache_read_tokens": 0,
       "cost_usd": 0.023112,
-      "wall_seconds": 0.6815514370000528,
+      "wall_seconds": 0.9332204639999873,
       "changed_files": [
         "units/temperature.py"
       ]
@@ -203,6 +221,7 @@
       "task_id": "09_truncate_ellipsis",
       "category": "edge case",
       "strategy": "direct",
+      "sample": 1,
       "passed": true,
       "visible_passed": true,
       "hidden_passed": true,
@@ -213,7 +232,7 @@
       "output_tokens": 149,
       "cache_read_tokens": 0,
       "cost_usd": 0.024356,
-      "wall_seconds": 0.6236130769998454,
+      "wall_seconds": 0.9881432629999836,
       "changed_files": [
         "textutil/shorten.py"
       ]
@@ -222,6 +241,7 @@
       "task_id": "10_dict_mutation_cache",
       "category": "mutation during iteration",
       "strategy": "direct",
+      "sample": 1,
       "passed": false,
       "visible_passed": false,
       "hidden_passed": false,
@@ -232,7 +252,7 @@
       "output_tokens": 110,
       "cache_read_tokens": 0,
       "cost_usd": 0.02614,
-      "wall_seconds": 0.7851779170000555,
+      "wall_seconds": 0.993362961999992,
       "changed_files": [
         "FIX_NOTES.md"
       ]
@@ -241,6 +261,7 @@
       "task_id": "11_binary_search_bounds",
       "category": "off-by-one",
       "strategy": "direct",
+      "sample": 1,
       "passed": true,
       "visible_passed": true,
       "hidden_passed": true,
@@ -251,7 +272,7 @@
       "output_tokens": 167,
       "cache_read_tokens": 0,
       "cost_usd": 0.02578,
-      "wall_seconds": 0.6127116460002071,
+      "wall_seconds": 0.8399253849997876,
       "changed_files": [
         "searching/bisect_search.py"
       ]
@@ -260,6 +281,7 @@
       "task_id": "12_leap_year_century",
       "category": "edge case",
       "strategy": "direct",
+      "sample": 1,
       "passed": true,
       "visible_passed": true,
       "hidden_passed": true,
@@ -270,7 +292,7 @@
       "output_tokens": 142,
       "cache_read_tokens": 0,
       "cost_usd": 0.02362,
-      "wall_seconds": 0.7539708479998808,
+      "wall_seconds": 0.6731449999997494,
       "changed_files": [
         "calendar_utils/years.py"
       ]
@@ -279,6 +301,7 @@
       "task_id": "13_roman_subtractive",
       "category": "incomplete logic",
       "strategy": "direct",
+      "sample": 1,
       "passed": false,
       "visible_passed": false,
       "hidden_passed": false,
@@ -289,13 +312,14 @@
       "output_tokens": 69,
       "cache_read_tokens": 0,
       "cost_usd": 0.014412,
-      "wall_seconds": 0.3775582759999452,
+      "wall_seconds": 0.3700922379998701,
       "changed_files": []
     },
     {
       "task_id": "14_csv_quoted_fields",
       "category": "parsing",
       "strategy": "direct",
+      "sample": 1,
       "passed": true,
       "visible_passed": true,
       "hidden_passed": true,
@@ -306,7 +330,7 @@
       "output_tokens": 240,
       "cache_read_tokens": 0,
       "cost_usd": 0.037704,
-      "wall_seconds": 0.7825699969998823,
+      "wall_seconds": 0.7321272959998169,
       "changed_files": [
         "csvlite/reader.py"
       ]
@@ -315,6 +339,7 @@
       "task_id": "15_late_binding_closure",
       "category": "closure late binding",
       "strategy": "direct",
+      "sample": 1,
       "passed": true,
       "visible_passed": true,
       "hidden_passed": true,
@@ -325,7 +350,7 @@
       "output_tokens": 139,
       "cache_read_tokens": 0,
       "cost_usd": 0.023496,
-      "wall_seconds": 0.7768440190002366,
+      "wall_seconds": 0.7567543079999268,
       "changed_files": [
         "funcs/factory.py"
       ]
@@ -334,6 +359,7 @@
       "task_id": "16_money_split_rounding",
       "category": "floating point",
       "strategy": "direct",
+      "sample": 1,
       "passed": true,
       "visible_passed": true,
       "hidden_passed": true,
@@ -344,7 +370,7 @@
       "output_tokens": 171,
       "cache_read_tokens": 0,
       "cost_usd": 0.024936,
-      "wall_seconds": 0.8015507539998907,
+      "wall_seconds": 0.7450154470002417,
       "changed_files": [
         "billing/split.py"
       ]
@@ -353,6 +379,7 @@
       "task_id": "17_date_range_inclusive",
       "category": "off-by-one",
       "strategy": "direct",
+      "sample": 1,
       "passed": false,
       "visible_passed": false,
       "hidden_passed": false,
@@ -363,13 +390,14 @@
       "output_tokens": 452,
       "cache_read_tokens": 0,
       "cost_usd": 0.230316,
-      "wall_seconds": 0.4528646909998315,
+      "wall_seconds": 0.347971029999826,
       "changed_files": []
     },
     {
       "task_id": "18_flatten_strings",
       "category": "edge case",
       "strategy": "direct",
+      "sample": 1,
       "passed": true,
       "visible_passed": true,
       "hidden_passed": true,
@@ -380,7 +408,7 @@
       "output_tokens": 173,
       "cache_read_tokens": 0,
       "cost_usd": 0.027436,
-      "wall_seconds": 0.9475403169999481,
+      "wall_seconds": 0.873914428000262,
       "changed_files": [
         "nested/flat.py"
       ]
@@ -389,6 +417,7 @@
       "task_id": "19_grid_shared_rows",
       "category": "aliasing",
       "strategy": "direct",
+      "sample": 1,
       "passed": true,
       "visible_passed": true,
       "hidden_passed": true,
@@ -399,7 +428,7 @@
       "output_tokens": 146,
       "cache_read_tokens": 0,
       "cost_usd": 0.0243,
-      "wall_seconds": 0.8100395840001511,
+      "wall_seconds": 0.8790884109998842,
       "changed_files": [
         "grids/grid.py"
       ]
@@ -408,6 +437,7 @@
       "task_id": "20_sort_multi_key",
       "category": "wrong sort key",
       "strategy": "direct",
+      "sample": 1,
       "passed": true,
       "visible_passed": true,
       "hidden_passed": true,
@@ -418,7 +448,7 @@
       "output_tokens": 171,
       "cache_read_tokens": 0,
       "cost_usd": 0.026196,
-      "wall_seconds": 0.7488369220000095,
+      "wall_seconds": 0.8493147829999543,
       "changed_files": [
         "hr/ordering.py"
       ]
@@ -427,6 +457,7 @@
       "task_id": "01_pagination_off_by_one",
       "category": "off-by-one",
       "strategy": "plan",
+      "sample": 1,
       "passed": true,
       "visible_passed": true,
       "hidden_passed": true,
@@ -437,7 +468,7 @@
       "output_tokens": 190,
       "cache_read_tokens": 0,
       "cost_usd": 0.031828,
-      "wall_seconds": 0.8828854769999452,
+      "wall_seconds": 0.9475655179999194,
       "changed_files": [
         "pager/core.py"
       ]
@@ -446,6 +477,7 @@
       "task_id": "02_moving_average_window",
       "category": "off-by-one",
       "strategy": "plan",
+      "sample": 1,
       "passed": true,
       "visible_passed": true,
       "hidden_passed": true,
@@ -456,7 +488,7 @@
       "output_tokens": 208,
       "cache_read_tokens": 0,
       "cost_usd": 0.031304,
-      "wall_seconds": 0.803640274999907,
+      "wall_seconds": 0.8615626350001548,
       "changed_files": [
         "series/stats.py"
       ]
@@ -465,6 +497,7 @@
       "task_id": "03_median_even_length",
       "category": "edge case",
       "strategy": "plan",
+      "sample": 1,
       "passed": true,
       "visible_passed": true,
       "hidden_passed": true,
@@ -475,7 +508,7 @@
       "output_tokens": 340,
       "cache_read_tokens": 0,
       "cost_usd": 0.045888,
-      "wall_seconds": 0.781627572999696,
+      "wall_seconds": 0.7767948210002942,
       "changed_files": [
         "numstats/central.py"
       ]
@@ -484,6 +517,7 @@
       "task_id": "04_email_regex",
       "category": "bad regex",
       "strategy": "plan",
+      "sample": 1,
       "passed": false,
       "visible_passed": true,
       "hidden_passed": false,
@@ -494,7 +528,7 @@
       "output_tokens": 177,
       "cache_read_tokens": 0,
       "cost_usd": 0.030472,
-      "wall_seconds": 0.9593264950003686,
+      "wall_seconds": 0.780935502000375,
       "changed_files": [
         "validators/email.py"
       ]
@@ -503,6 +537,7 @@
       "task_id": "05_mutable_default_cart",
       "category": "mutable default argument",
       "strategy": "plan",
+      "sample": 1,
       "passed": true,
       "visible_passed": true,
       "hidden_passed": true,
@@ -513,7 +548,7 @@
       "output_tokens": 194,
       "cache_read_tokens": 0,
       "cost_usd": 0.031116,
-      "wall_seconds": 0.7247638680000819,
+      "wall_seconds": 0.7229669190001005,
       "changed_files": [
         "shop/orders.py"
       ]
@@ -522,6 +557,7 @@
       "task_id": "06_async_gather",
       "category": "async bug",
       "strategy": "plan",
+      "sample": 1,
       "passed": true,
       "visible_passed": true,
       "hidden_passed": true,
@@ -532,7 +568,7 @@
       "output_tokens": 195,
       "cache_read_tokens": 0,
       "cost_usd": 0.0314,
-      "wall_seconds": 0.7601545910001732,
+      "wall_seconds": 0.7490157750003164,
       "changed_files": [
         "fetcher/client.py"
       ]
@@ -541,6 +577,7 @@
       "task_id": "07_async_lock_race",
       "category": "async bug",
       "strategy": "plan",
+      "sample": 1,
       "passed": false,
       "visible_passed": false,
       "hidden_passed": false,
@@ -551,13 +588,14 @@
       "output_tokens": 347,
       "cache_read_tokens": 0,
       "cost_usd": 0.037524,
-      "wall_seconds": 0.40947451199963325,
+      "wall_seconds": 0.391132001999722,
       "changed_files": []
     },
     {
       "task_id": "08_celsius_integer_division",
       "category": "wrong operator",
       "strategy": "plan",
+      "sample": 1,
       "passed": true,
       "visible_passed": true,
       "hidden_passed": true,
@@ -568,7 +606,7 @@
       "output_tokens": 164,
       "cache_read_tokens": 0,
       "cost_usd": 0.02886,
-      "wall_seconds": 0.935296272999949,
+      "wall_seconds": 0.9063874839998789,
       "changed_files": [
         "units/temperature.py"
       ]
@@ -577,6 +615,7 @@
       "task_id": "09_truncate_ellipsis",
       "category": "edge case",
       "strategy": "plan",
+      "sample": 1,
       "passed": true,
       "visible_passed": true,
       "hidden_passed": true,
@@ -587,7 +626,7 @@
       "output_tokens": 179,
       "cache_read_tokens": 0,
       "cost_usd": 0.0302,
-      "wall_seconds": 0.8829301590003524,
+      "wall_seconds": 0.855688803999783,
       "changed_files": [
         "textutil/shorten.py"
       ]
@@ -596,6 +635,7 @@
       "task_id": "10_dict_mutation_cache",
       "category": "mutation during iteration",
       "strategy": "plan",
+      "sample": 1,
       "passed": false,
       "visible_passed": false,
       "hidden_passed": false,
@@ -606,7 +646,7 @@
       "output_tokens": 140,
       "cache_read_tokens": 0,
       "cost_usd": 0.03198,
-      "wall_seconds": 0.6675946229997862,
+      "wall_seconds": 0.9470614020001449,
       "changed_files": [
         "FIX_NOTES.md"
       ]
@@ -615,6 +655,7 @@
       "task_id": "11_binary_search_bounds",
       "category": "off-by-one",
       "strategy": "plan",
+      "sample": 1,
       "passed": true,
       "visible_passed": true,
       "hidden_passed": true,
@@ -625,7 +666,7 @@
       "output_tokens": 197,
       "cache_read_tokens": 0,
       "cost_usd": 0.031652,
-      "wall_seconds": 0.8100515870000891,
+      "wall_seconds": 0.8471653739998146,
       "changed_files": [
         "searching/bisect_search.py"
       ]
@@ -634,6 +675,7 @@
       "task_id": "12_leap_year_century",
       "category": "edge case",
       "strategy": "plan",
+      "sample": 1,
       "passed": true,
       "visible_passed": true,
       "hidden_passed": true,
@@ -644,7 +686,7 @@
       "output_tokens": 172,
       "cache_read_tokens": 0,
       "cost_usd": 0.02946,
-      "wall_seconds": 0.8294151049999527,
+      "wall_seconds": 0.8101996969999163,
       "changed_files": [
         "calendar_utils/years.py"
       ]
@@ -653,6 +695,7 @@
       "task_id": "13_roman_subtractive",
       "category": "incomplete logic",
       "strategy": "plan",
+      "sample": 1,
       "passed": false,
       "visible_passed": false,
       "hidden_passed": false,
@@ -663,13 +706,14 @@
       "output_tokens": 99,
       "cache_read_tokens": 0,
       "cost_usd": 0.019416,
-      "wall_seconds": 0.348455242,
+      "wall_seconds": 0.5305293760002314,
       "changed_files": []
     },
     {
       "task_id": "14_csv_quoted_fields",
       "category": "parsing",
       "strategy": "plan",
+      "sample": 1,
       "passed": true,
       "visible_passed": true,
       "hidden_passed": true,
@@ -680,7 +724,7 @@
       "output_tokens": 270,
       "cache_read_tokens": 0,
       "cost_usd": 0.044344,
-      "wall_seconds": 0.7829797809999945,
+      "wall_seconds": 0.8382737729998553,
       "changed_files": [
         "csvlite/reader.py"
       ]
@@ -689,6 +733,7 @@
       "task_id": "15_late_binding_closure",
       "category": "closure late binding",
       "strategy": "plan",
+      "sample": 1,
       "passed": true,
       "visible_passed": true,
       "hidden_passed": true,
@@ -699,7 +744,7 @@
       "output_tokens": 169,
       "cache_read_tokens": 0,
       "cost_usd": 0.029276,
-      "wall_seconds": 0.8391019760001655,
+      "wall_seconds": 0.7559553410001172,
       "changed_files": [
         "funcs/factory.py"
       ]
@@ -708,6 +753,7 @@
       "task_id": "16_money_split_rounding",
       "category": "floating point",
       "strategy": "plan",
+      "sample": 1,
       "passed": true,
       "visible_passed": true,
       "hidden_passed": true,
@@ -718,7 +764,7 @@
       "output_tokens": 201,
       "cache_read_tokens": 0,
       "cost_usd": 0.030776,
-      "wall_seconds": 0.8516975950001324,
+      "wall_seconds": 0.7618720360001134,
       "changed_files": [
         "billing/split.py"
       ]
@@ -727,6 +773,7 @@
       "task_id": "17_date_range_inclusive",
       "category": "off-by-one",
       "strategy": "plan",
+      "sample": 1,
       "passed": false,
       "visible_passed": false,
       "hidden_passed": false,
@@ -737,13 +784,14 @@
       "output_tokens": 467,
       "cache_read_tokens": 0,
       "cost_usd": 0.232988,
-      "wall_seconds": 0.45079178700007105,
+      "wall_seconds": 0.37444723099997645,
       "changed_files": []
     },
     {
       "task_id": "18_flatten_strings",
       "category": "edge case",
       "strategy": "plan",
+      "sample": 1,
       "passed": true,
       "visible_passed": true,
       "hidden_passed": true,
@@ -754,7 +802,7 @@
       "output_tokens": 203,
       "cache_read_tokens": 0,
       "cost_usd": 0.03328,
-      "wall_seconds": 0.9324499699996522,
+      "wall_seconds": 0.7064841960000194,
       "changed_files": [
         "nested/flat.py"
       ]
@@ -763,6 +811,7 @@
       "task_id": "19_grid_shared_rows",
       "category": "aliasing",
       "strategy": "plan",
+      "sample": 1,
       "passed": true,
       "visible_passed": true,
       "hidden_passed": true,
@@ -773,7 +822,7 @@
       "output_tokens": 176,
       "cache_read_tokens": 0,
       "cost_usd": 0.030104,
-      "wall_seconds": 0.8095150330000251,
+      "wall_seconds": 0.8138041749998592,
       "changed_files": [
         "grids/grid.py"
       ]
@@ -782,6 +831,7 @@
       "task_id": "20_sort_multi_key",
       "category": "wrong sort key",
       "strategy": "plan",
+      "sample": 1,
       "passed": true,
       "visible_passed": true,
       "hidden_passed": true,
@@ -792,7 +842,7 @@
       "output_tokens": 201,
       "cache_read_tokens": 0,
       "cost_usd": 0.03208,
-      "wall_seconds": 0.7117446789998212,
+      "wall_seconds": 0.7942487159998564,
       "changed_files": [
         "hr/ordering.py"
       ]

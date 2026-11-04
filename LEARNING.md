@@ -124,7 +124,11 @@ fail when it does?" Pitfalls this harness guards against (`bench.py`,
   ordered rules over facts the harness observes (the workspace diff, rejected
   patches, the stop reason), not the agent's own claims.
 - **Metrics.** pass@1 (share of tasks solved on the single attempt), average
-  steps, tokens, cost and wall time, per strategy.
+  steps, tokens, cost and wall time, per strategy. With `--samples n`, pass@k
+  uses the unbiased estimator `1 - C(n-c, k) / C(n, k)` per task (`bench.pass_at_k`):
+  the chance that k samples drawn from the n you ran include at least one pass.
+  One sample per task is noisy for a stochastic model; several samples let you
+  separate "can it ever solve this" (pass@k) from "does it usually" (pass@1).
 - **Honesty about the mock.** The mock provider is handed the answer, so its
   75% is a property of the script. It proves the plumbing, not ability.
 

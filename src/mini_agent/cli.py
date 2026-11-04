@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Any
 
 from mini_agent.agent import AgentConfig
-from mini_agent.bench import MODES, run_benchmark, run_task
+from mini_agent.bench import MODES, run_benchmark, run_task, summarise_results
 from mini_agent.tasks import TASKS_DIR, Task, load_tasks
 from mini_agent.trajectory import read_trajectory
 from mini_agent.viewer import render_run, render_trajectory
@@ -92,6 +92,7 @@ def main(argv: list[str] | None = None) -> int:
     bench.add_argument("--tasks", help="comma-separated task ids or prefixes (default: all)")
     bench.add_argument("--out", type=Path, help="default: bench/results/<mock|live|replay>")
     bench.add_argument("--replay-dir", type=Path, help="recorded run to replay (--provider replay)")
+    bench.add_argument("--samples", type=int, default=1, help="runs per task, for pass@k")
     bench.add_argument(
         "--min-pass-rate",
         type=float,
@@ -134,10 +135,12 @@ def main(argv: list[str] | None = None) -> int:
     strategies = ["direct", "plan"] if args.strategy == "both" else [args.strategy]
     tasks = _select(tasks, args.tasks)
     args.out = args.out or Path("bench/results") / MODES[args.provider]
-    results = run_benchmark(tasks, args.provider, strategies, args.out, config, args.replay_dir)
+    results = run_benchmark(
+        tasks, args.provider, strategies, args.out, config, args.replay_dir, args.samples
+    )
     print((args.out / "results.md").read_text())
     print(f"{len(results)} runs written to {args.out}")
-    rates = {s: sum(r.passed for r in results if r.strategy == s) / len(tasks) for s in strategies}
+    rates = {s: summary["pass_at_1"] for s, summary in summarise_results(results).items()}
     below = {s: rate for s, rate in rates.items() if rate < args.min_pass_rate}
     if below:
         print(f"pass@1 below {args.min_pass_rate:.0%}: {below}")

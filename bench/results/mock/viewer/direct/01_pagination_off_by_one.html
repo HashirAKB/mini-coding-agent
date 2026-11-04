@@ -62,7 +62,7 @@ tests/test_core.py:9: AssertionError
 =========================== short test summary info ============================
 FAILED tests/test_core.py::test_first_page - assert [3, 4, 5] == [0, 1, 2]
 FAILED tests/test_core.py::test_second_page - assert [6, 7, 8] == [3, 4, 5]
-2 failed in 0.02s</pre></section><section class='step'><h2>Step 4</h2><p class='meta'>context estimate 1,085 tokens; usage in/out 1,085/85</p><p class='thought'>I see the bug; applying a fix.</p><p><strong>apply_patch</strong> {}</p><pre><strong>--- a/pager/core.py</strong>
+2 failed in 0.03s</pre></section><section class='step'><h2>Step 4</h2><p class='meta'>context estimate 1,085 tokens; usage in/out 1,085/85</p><p class='thought'>I see the bug; applying a fix.</p><p><strong>apply_patch</strong> {}</p><pre><strong>--- a/pager/core.py</strong>
 <strong>+++ b/pager/core.py</strong>
 <span class="hunk">@@ -1,4 +1,4 @@</span>
  def paginate(items, page, per_page):

@@ -124,3 +124,13 @@ considered, why.
 - **Why:** the SDK already implements backoff with jitter and honours
   `retry-after`. A second layer would multiply retries (5 x 5) and wait times.
   Mock providers never fail transiently, so nothing else needs retries.
+
+## D14. pass@k via repeated samples and the unbiased estimator
+- **Decision:** `--samples N` repeats each (task, strategy) N times; the
+  summary reports pass@1 and pass@N using `1 - C(n-c, k)/C(n, k)` per task.
+  Trajectories of repeated samples are named `<task>.s<i>.jsonl`; with one
+  sample the name stays `<task>.jsonl`.
+- **Alternatives:** the naive estimate "1 if any of k runs passed".
+- **Why:** the naive estimate is biased upward and has high variance; the
+  combinatorial estimator is the standard one from the Codex paper and is
+  exact for k = n.

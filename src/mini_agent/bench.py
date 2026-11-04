@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import difflib
 import json
+import math
 import os
 import tempfile
 import time
@@ -84,6 +85,7 @@ class TaskResult:
     task_id: str
     category: str
     strategy: str
+    sample: int  # 1-based sample number when a task is run several times
     passed: bool
     visible_passed: bool
     hidden_passed: bool
@@ -168,13 +170,19 @@ def count_failed_patches(events: list[dict[str, Any]]) -> int:
     return failed
 
 
-def make_provider(provider: str, task: Task, strategy: str, replay_dir: Path | None) -> Provider:
+def trajectory_name(task: Task, sample: int, samples: int) -> str:
+    return f"{task.id}.jsonl" if samples == 1 else f"{task.id}.s{sample}.jsonl"
+
+
+def make_provider(
+    provider: str, task: Task, strategy: str, replay_dir: Path | None, name: str
+) -> Provider:
     if provider == "mock":
         behaviour = MOCK_BEHAVIOURS.get(task.id, "solve")
         return ScriptedProvider(task.solution_patch, behaviour, task.overfit_patch)
     if provider == "replay":
         assert replay_dir is not None, "replay needs a directory of recorded trajectories"
-        return ReplayProvider.from_file(replay_dir / strategy / f"{task.id}.jsonl")
+        return ReplayProvider.from_file(replay_dir / strategy / name)
     if provider == "anthropic":
         if not os.environ.get("ANTHROPIC_API_KEY"):
             raise SystemExit("ANTHROPIC_API_KEY is not set; use --provider mock to run offline.")
@@ -200,9 +208,12 @@ def run_task(
     out_dir: Path,
     config: AgentConfig,
     replay_dir: Path | None = None,
+    sample: int = 1,
+    samples: int = 1,
 ) -> TaskResult:
-    trajectory_path = out_dir / "trajectories" / strategy / f"{task.id}.jsonl"
-    provider = make_provider(provider_name, task, strategy, replay_dir)
+    name = trajectory_name(task, sample, samples)
+    trajectory_path = out_dir / "trajectories" / strategy / name
+    provider = make_provider(provider_name, task, strategy, replay_dir, name)
     run_config = AgentConfig(**{**asdict(config), "strategy": strategy})
     with tempfile.TemporaryDirectory(prefix=f"{task.id}-") as tmp:
         root = prepare_workspace(task, Path(tmp))
@@ -240,6 +251,7 @@ def run_task(
         task_id=task.id,
         category=task.category,
         strategy=strategy,
+        sample=sample,
         passed=failure is None,
         visible_passed=visible.passed,
         hidden_passed=hidden.passed,
@@ -255,16 +267,38 @@ def run_task(
     )
 
 
+def pass_at_k(n: int, c: int, k: int) -> float:
+    """Unbiased estimate of P(at least one of k samples passes), from n samples with c passes.
+
+    1 - C(n - c, k) / C(n, k): one minus the chance that k samples drawn without
+    replacement from the n are all failures (Chen et al., 2021, the Codex paper).
+    """
+    if n - c < k:
+        return 1.0
+    return 1.0 - math.comb(n - c, k) / math.comb(n, k)
+
+
 def summarise_results(results: list[TaskResult]) -> dict[str, dict[str, Any]]:
     summary: dict[str, dict[str, Any]] = {}
     for strategy in dict.fromkeys(r.strategy for r in results):
         runs = [r for r in results if r.strategy == strategy]
         n = len(runs)
         tokens = [r.input_tokens + r.output_tokens for r in runs]
+        per_task: dict[str, list[bool]] = {}
+        for r in runs:
+            per_task.setdefault(r.task_id, []).append(r.passed)
+        samples = min(len(passes) for passes in per_task.values())
+        pass_at = {
+            str(k): sum(pass_at_k(len(p), sum(p), k) for p in per_task.values()) / len(per_task)
+            for k in sorted({1, samples})
+        }
         summary[strategy] = {
-            "tasks": n,
+            "tasks": len(per_task),
+            "samples_per_task": samples,
+            "runs": n,
             "passed": sum(r.passed for r in runs),
-            "pass_at_1": sum(r.passed for r in runs) / n,
+            "pass_at_1": pass_at["1"],
+            "pass_at_k": pass_at,
             "avg_steps": sum(r.steps for r in runs) / n,
             "total_tokens": sum(tokens),
             "cache_read_tokens": sum(r.cache_read_tokens for r in runs),
@@ -284,13 +318,16 @@ def render_markdown(
         "",
         "## Summary",
         "",
-        "| strategy | pass@1 | avg steps | total tokens | avg tokens | cost (USD) | avg wall (s) |",
-        "|---|---|---|---|---|---|---|",
+        "| strategy | pass@1 | pass@k | avg steps | total tokens | avg tokens | cost (USD) "
+        "| avg wall (s) |",
+        "|---|---|---|---|---|---|---|---|",
     ]
     for strategy, s in summary.items():
+        k = str(s["samples_per_task"])
         lines.append(
-            f"| {strategy} | {s['passed']}/{s['tasks']} ({s['pass_at_1']:.0%}) "
-            f"| {s['avg_steps']:.1f} | {s['total_tokens']:,} | {s['avg_tokens']:,.0f} "
+            f"| {strategy} | {s['passed']}/{s['runs']} ({s['pass_at_1']:.0%}) "
+            f"| pass@{k} {s['pass_at_k'][k]:.0%} | {s['avg_steps']:.1f} "
+            f"| {s['total_tokens']:,} | {s['avg_tokens']:,.0f} "
             f"| {s['total_cost_usd']:.2f} | {s['avg_wall_seconds']:.2f} |"
         )
     lines += ["", "## Failure taxonomy", "", "| category | " + " | ".join(summary) + " |"]
@@ -302,13 +339,14 @@ def render_markdown(
         "",
         "## Per task",
         "",
-        "| task | bug category | strategy | result | stop reason | steps | tokens |",
-        "|---|---|---|---|---|---|---|",
+        "| task | bug category | strategy | sample | result | stop reason | steps | tokens |",
+        "|---|---|---|---|---|---|---|---|",
     ]
     for r in results:
         outcome = "pass" if r.passed else f"fail: {r.failure}"
         lines.append(
-            f"| {r.task_id} | {r.category} | {r.strategy} | {outcome} | {r.stop_reason} "
+            f"| {r.task_id} | {r.category} | {r.strategy} | {r.sample} | {outcome} "
+            f"| {r.stop_reason} "
             f"| {r.steps} | {r.input_tokens + r.output_tokens:,} |"
         )
     return "\n".join(lines) + "\n"
@@ -321,11 +359,13 @@ def run_benchmark(
     out_dir: Path,
     config: AgentConfig,
     replay_dir: Path | None = None,
+    samples: int = 1,
 ) -> list[TaskResult]:
     results = [
-        run_task(task, provider_name, strategy, out_dir, config, replay_dir)
+        run_task(task, provider_name, strategy, out_dir, config, replay_dir, sample, samples)
         for strategy in strategies
         for task in tasks
+        for sample in range(1, samples + 1)
     ]
     mode = MODES[provider_name]
     summary = summarise_results(results)

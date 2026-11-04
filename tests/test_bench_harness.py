@@ -134,3 +134,33 @@ def test_cost_prices_cache_reads_and_writes_separately() -> None:
     written = cost_usd("claude-opus-5-5", Usage(1_000_000, 0, cache_write_tokens=1_000_000))
     assert written == pytest.approx(5.00)
     assert cost_usd("claude-opus-5-5", Usage(0, 1_000_000)) == pytest.approx(20.00)
+
+
+@pytest.mark.parametrize(
+    "n, c, k, expected",
+    [
+        (5, 1, 1, 0.2),
+        (5, 1, 5, 1.0),
+        (5, 0, 3, 0.0),
+        (5, 5, 1, 1.0),
+        (4, 2, 2, 1 - 1 / 6),  # 1 - C(2,2)/C(4,2)
+        (10, 3, 4, 1 - 35 / 210),  # 1 - C(7,4)/C(10,4)
+    ],
+)
+def test_unbiased_pass_at_k(n: int, c: int, k: int, expected: float) -> None:
+    from mini_agent.bench import pass_at_k
+
+    assert pass_at_k(n, c, k) == pytest.approx(expected)
+
+
+def test_several_samples_per_task(tmp_path: Path) -> None:
+    tasks = [t for t in load_tasks(TASKS_DIR) if t.id.startswith(("01_", "13_"))]
+    results = run_benchmark(tasks, "mock", ["direct"], tmp_path, AgentConfig(), samples=3)
+    assert len(results) == 6
+    assert sorted({r.sample for r in results}) == [1, 2, 3]
+    assert (tmp_path / "trajectories" / "direct" / "01_pagination_off_by_one.s2.jsonl").is_file()
+    summary = summarise_results(results)["direct"]
+    # The scripted mock is deterministic, so every sample agrees: pass@k == pass@1.
+    assert summary["pass_at_1"] == pytest.approx(0.5)
+    assert summary["pass_at_k"] == {"1": pytest.approx(0.5), "3": pytest.approx(0.5)}
+    assert "pass@3" in (tmp_path / "results.md").read_text()

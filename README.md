@@ -155,6 +155,10 @@ Each has a longer write-up in [`docs/adr/`](docs/adr) and
   and dropped connections with exponential backoff and jitter; the provider
   sets 5 retries and a 10 minute timeout instead of adding a second retry
   layer. Anything that still fails ends that run as `provider_error`.
+- **pass@k with the unbiased estimator.** `bench --samples N` runs every task N
+  times and reports pass@1 and pass@N as 1 - C(n-c, k) / C(n, k) averaged over
+  tasks, which is lower-variance than "did any of k runs pass". In mock mode
+  every sample is identical, so pass@N equals pass@1.
 - **Mock is the default provider everywhere.** Live runs need an explicit flag,
   so nobody spends money by accident.
 
@@ -175,11 +179,10 @@ Each has a longer write-up in [`docs/adr/`](docs/adr) and
 
 ## What I'd do next
 
-1. pass@k: several samples per task and the unbiased pass@k estimator.
-2. Parallel task execution in the harness (`--workers N`).
-3. Optional LLM-written history summaries, with the extractive digest as the
+1. Parallel task execution in the harness (`--workers N`).
+2. Optional LLM-written history summaries, with the extractive digest as the
    fallback.
-4. Run the live benchmark for both strategies and commit the results.
+3. Run the live benchmark for both strategies and commit the results.
 
 ## Project layout
 

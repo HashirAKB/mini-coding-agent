@@ -49,7 +49,7 @@ E         Expected: 98.6 ± 9.9e-05
 tests/test_temperature.py:7: AssertionError
 =========================== short test summary info ============================
 FAILED tests/test_temperature.py::test_body_temperature - assert 98 == 98.6 ±...
-1 failed in 0.01s</pre></section><section class='step'><h2>Step 4</h2><p class='meta'>context estimate 940 tokens; usage in/out 940/57</p><p class='thought'>I see the bug; applying a fix.</p><p><strong>apply_patch</strong> {}</p><pre><strong>--- a/units/temperature.py</strong>
+1 failed in 0.02s</pre></section><section class='step'><h2>Step 4</h2><p class='meta'>context estimate 940 tokens; usage in/out 940/57</p><p class='thought'>I see the bug; applying a fix.</p><p><strong>apply_patch</strong> {}</p><pre><strong>--- a/units/temperature.py</strong>
 <strong>+++ b/units/temperature.py</strong>
 <span class="hunk">@@ -1,2 +1,2 @@</span>
  def to_fahrenheit(celsius):
