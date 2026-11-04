@@ -22,3 +22,7 @@ jobs:
         run: python -m mypy
       - name: Tests
         run: python -m pytest -q
+      - name: Benchmark (mock mode)
+        # The scripted oracle is expected to pass exactly 15 of 20 tasks (75%).
+        # A lower rate means the harness, tools or tasks regressed.
+        run: python -m mini_agent bench --provider mock --out /tmp/bench-ci --min-pass-rate 0.75

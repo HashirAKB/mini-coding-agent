@@ -8,7 +8,7 @@ commit is pushed.
 - [x] M2 Providers (scripted, replay, anthropic) + agent loop + stop conditions
 - [x] M3 Context management (estimate, truncation, summarisation)
 - [x] M4 20 benchmark tasks with visible + hidden tests and reference patches
-- [ ] M5 Harness, metrics, failure taxonomy, strategies, committed mock results
+- [x] M5 Harness, metrics, failure taxonomy, strategies, committed mock results
 - [ ] M6 Trajectory viewer, README, LEARNING, ADRs, SUMMARY, final review
 
 ## Blockers

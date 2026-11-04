@@ -1,9 +1,130 @@
-"""Command line entry point (filled in as milestones land)."""
+"""Command line interface.
+
+python -m mini_agent demo                      # one task, mock provider, printed step by step
+python -m mini_agent run --task 04_email_regex --strategy plan
+python -m mini_agent bench                     # all tasks, both strategies, mock provider
+python -m mini_agent bench --provider anthropic --out bench/results/live
+"""
+
+from __future__ import annotations
 
 import argparse
+import tempfile
+import textwrap
+from pathlib import Path
+from typing import Any
+
+from mini_agent.agent import AgentConfig
+from mini_agent.bench import run_benchmark, run_task
+from mini_agent.tasks import TASKS_DIR, Task, load_tasks
+from mini_agent.trajectory import read_trajectory
+
+PROVIDERS = ["mock", "anthropic", "replay"]
+
+
+def _indent(text: str, limit: int = 12) -> str:
+    lines = text.splitlines() or [""]
+    shown = lines[:limit] + (
+        [f"... ({len(lines) - limit} more lines)"] if len(lines) > limit else []
+    )
+    return textwrap.indent("\n".join(shown), "      ")
+
+
+def format_trajectory(events: list[dict[str, Any]]) -> str:
+    """Human-readable rendering of a trajectory for the terminal."""
+    out: list[str] = []
+    for event in events:
+        if event["type"] == "run_start":
+            out.append(f"provider={event['provider']} model={event['model']}")
+            out.append(f"task: {event['task']}\n")
+        elif event["type"] == "step":
+            out.append(f"[step {event['step']}] {event['text']}")
+            results = {o["call_id"]: o for o in event["observations"]}
+            for call in event["tool_calls"]:
+                args = ", ".join(f"{k}={v!r}" for k, v in call["args"].items() if k != "patch")
+                out.append(f"  -> {call['name']}({args})")
+                if call["name"] == "apply_patch":
+                    out.append(_indent(call["args"]["patch"]))
+                observation = results.get(call["id"])
+                if observation:
+                    label = "ERROR" if observation["is_error"] else "ok"
+                    out.append(f"  <- {label}")
+                    out.append(_indent(observation["output"], limit=6))
+        elif event["type"] == "context_summarised":
+            out.append(
+                f"[context] summarised history: {event['tokens_before']} -> "
+                f"{event['tokens_after']} tokens"
+            )
+        elif event["type"] == "run_end":
+            out.append(
+                f"\nstopped: {event['stop_reason']} after {event['steps']} steps, "
+                f"tokens in/out {event['usage']['input_tokens']}/{event['usage']['output_tokens']}"
+            )
+        elif event["type"] == "evaluation":
+            verdict = "PASS" if event["failure"] is None else f"FAIL ({event['failure']})"
+            out.append(
+                f"evaluation: visible tests {'pass' if event['visible_passed'] else 'fail'}, "
+                f"hidden tests {'pass' if event['hidden_passed'] else 'fail'} -> {verdict}"
+            )
+    return "\n".join(out)
+
+
+def _select(tasks: list[Task], ids: str | None) -> list[Task]:
+    if not ids:
+        return tasks
+    wanted = ids.split(",")
+    selected = [t for t in tasks if t.id in wanted or any(t.id.startswith(w) for w in wanted)]
+    if not selected:
+        raise SystemExit(f"No task matches {ids!r}.")
+    return selected
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(prog="mini_agent")
-    parser.parse_args(argv)
+    parser = argparse.ArgumentParser(prog="mini_agent", description=__doc__.splitlines()[0])
+    sub = parser.add_subparsers(dest="command", required=True)
+
+    run = sub.add_parser("run", aliases=["demo"], help="Run the agent on one task and print it")
+    run.add_argument("--task", default="01_pagination_off_by_one", help="task id or prefix")
+    run.add_argument("--out", type=Path, help="directory for the trajectory (default: temp)")
+
+    bench = sub.add_parser("bench", help="Run the benchmark and write results")
+    bench.add_argument("--tasks", help="comma-separated task ids or prefixes (default: all)")
+    bench.add_argument("--out", type=Path, default=Path("bench/results/mock"))
+    bench.add_argument("--replay-dir", type=Path, help="recorded run to replay (--provider replay)")
+    bench.add_argument(
+        "--min-pass-rate",
+        type=float,
+        default=0.0,
+        help="exit with status 1 if any strategy's pass@1 is below this (used by CI)",
+    )
+
+    for command in (run, bench):
+        command.add_argument("--provider", choices=PROVIDERS, default="mock")
+        command.add_argument("--max-steps", type=int, default=AgentConfig.max_steps)
+    run.add_argument("--strategy", choices=["direct", "plan"], default="direct")
+    bench.add_argument("--strategy", choices=["direct", "plan", "both"], default="both")
+
+    args = parser.parse_args(argv)
+    config = AgentConfig(max_steps=args.max_steps)
+    tasks = load_tasks(TASKS_DIR)
+
+    if args.command in ("run", "demo"):
+        [task] = _select(tasks, args.task)[:1]
+        out = args.out or Path(tempfile.mkdtemp(prefix="mini-agent-"))
+        run_task(task, args.provider, args.strategy, out, config)
+        path = out / "trajectories" / args.strategy / f"{task.id}.jsonl"
+        print(format_trajectory(read_trajectory(path)))
+        print(f"\ntrajectory: {path}")
+        return 0
+
+    strategies = ["direct", "plan"] if args.strategy == "both" else [args.strategy]
+    tasks = _select(tasks, args.tasks)
+    results = run_benchmark(tasks, args.provider, strategies, args.out, config, args.replay_dir)
+    print((args.out / "results.md").read_text())
+    print(f"{len(results)} runs written to {args.out}")
+    rates = {s: sum(r.passed for r in results if r.strategy == s) / len(tasks) for s in strategies}
+    below = {s: rate for s, rate in rates.items() if rate < args.min_pass_rate}
+    if below:
+        print(f"pass@1 below {args.min_pass_rate:.0%}: {below}")
+        return 1
     return 0

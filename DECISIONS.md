@@ -68,3 +68,28 @@ considered, why.
   read). Stripping thinking blocks from kept turns is required because the API
   rejects thinking blocks whose preceding history was edited. An LLM-written
   summary is listed under "What I'd do next".
+
+## D8. Mock is the default provider everywhere
+- **Decision:** every command defaults to `--provider mock`. Live mode needs an
+  explicit `--provider anthropic` and fails fast if `ANTHROPIC_API_KEY` is unset.
+- **Alternatives:** switch to live automatically when a key is present.
+- **Why:** a benchmark run makes hundreds of model calls; nobody should spend
+  money by accident because a key happened to be in their shell.
+
+## D9. Failure taxonomy is decided by ordered rules over observable facts
+- **Decision:** `classify_failure` checks, in order: passed, budget stop, no
+  file changed (broken patch if a patch was rejected, else gave up), no
+  changed file overlaps the reference fix (wrong file), visible pass but hidden
+  fail (overfit), otherwise incorrect fix. "Changed files" comes from diffing
+  the workspace against the original repo, not from the agent's claims.
+- **Alternatives:** let an LLM judge label failures; allow several labels.
+- **Why:** deterministic, cheap, testable, and every label has a one-line
+  definition. One label per run keeps the counts summing to the failures.
+  `incorrect_fix` was added as a catch-all so every failure gets a label.
+
+## D10. Mock benchmark has a pass-rate gate in CI
+- **Decision:** CI runs the mock benchmark with `--min-pass-rate 0.75`.
+- **Alternatives:** only check that the benchmark runs.
+- **Why:** the scripted oracle's expected score is known (15/20). A drop means
+  a regression in tools, patching, evaluation or tasks, which is exactly what
+  the mock run is for.

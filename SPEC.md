@@ -74,8 +74,9 @@ src/mini_agent/
     replay.py     ReplayProvider (replays a recorded trajectory)
     anthropic.py  AnthropicProvider (official SDK, lazy import)
   trajectory.py   JSONL trajectory writer/reader
-  bench.py        Task loading, isolated runs, hidden-test evaluation,
-                  metrics, failure taxonomy, results writing
+  tasks.py        Task loading, workspace preparation, running test suites
+  bench.py        Isolated runs, hidden-test evaluation, metrics,
+                  failure taxonomy, results writing
   viewer.py       Static HTML trajectory viewer
   cli.py          `python -m mini_agent demo | run | bench | view`
 bench/tasks/<id>/ task.json, repo/ (package + visible tests),
@@ -134,4 +135,11 @@ runs both suites in the workspace.
 
 ## Deviations
 
-(Record here any place where the build differs from this spec and why.)
+- **`bench.py` split in two.** Task loading and test-suite execution live in
+  `tasks.py`; `bench.py` holds the harness (runs, metrics, taxonomy, reports).
+  One module was getting long and mixed two concerns.
+- **`replay` mode label.** Besides `mock` and `live`, results from
+  `--provider replay` are labelled `replay`, since replayed turns are neither a
+  new live run nor scripted.
+- **Extra failure category `incorrect_fix`** (right file, tests still fail),
+  so that every failed run gets exactly one label.

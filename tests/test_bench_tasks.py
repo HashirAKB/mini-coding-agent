@@ -4,8 +4,8 @@ from pathlib import Path
 
 import pytest
 
-from mini_agent.bench import TASKS_DIR, load_tasks, prepare_workspace, run_suite
 from mini_agent.patch import apply_patch
+from mini_agent.tasks import TASKS_DIR, load_tasks, prepare_workspace, run_suite
 from mini_agent.workspace import Workspace
 
 TASKS = load_tasks(TASKS_DIR)
