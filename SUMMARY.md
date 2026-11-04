@@ -12,22 +12,28 @@
   symlinks is blocked and tested.
 - Context management: chars/4 token estimates per request, head-and-tail
   truncation of large outputs with a re-read hint, and keep-tail summarisation
-  of old turns near the limit (thinking blocks dropped from retained turns).
+  of old turns near the limit (thinking blocks dropped from retained turns),
+  with an optional model-written summary that falls back to the rule-based one.
 - A provider interface with three implementations: a scripted oracle with
   injected faults, a replay provider for recorded trajectories, and a live
-  provider using the official Anthropic SDK.
+  provider using the official Anthropic SDK (adaptive thinking, prompt caching
+  with cache tokens priced separately, SDK retries with backoff).
 - A benchmark of 20 small buggy Python packages (off-by-one, edge cases, bad
   regex, mutable default argument, two async bugs, aliasing, closures, floating
   point and more), each with visible tests, hidden tests kept outside the
   agent's workspace, and a reference patch.
 - A harness that runs each task in isolation, records JSONL trajectories,
   restores visible tests and adds hidden ones before scoring, reports pass@1,
-  average steps, tokens, cost and wall time per strategy, and labels every
+  pass@k (unbiased estimator over `--samples`), average steps, tokens, cost and
+  wall time split into model and tool time, runs tasks in parallel
+  (`--workers`), optionally runs all tests in a no-network Docker sandbox, and
+  labels every
   failure (provider error, budget exceeded, broken patch, gave up, wrong file,
   test overfit, incorrect fix).
 - A direct vs plan-then-act strategy comparison, a static HTML trajectory
-  viewer, a CLI, over 100 tests, CI (lint, typecheck, tests, mock benchmark with a
-  pass-rate gate) and a Dockerfile.
+  viewer, a CLI, over 100 tests, CI (lint, typecheck, tests, mock benchmark with
+  a pass-rate gate and a check against the committed results, Docker image
+  build and sandbox tests) and a Dockerfile.
 
 ## What is mocked and what is real
 
@@ -38,6 +44,7 @@
 | Model in tests, CI, demo and committed results | **mock** (scripted oracle that is given the reference fix) |
 | Token counts and cost in committed results | **estimated** (chars/4, priced at `claude-opus-5-5` rates) |
 | Live Claude provider | real code, tested only against a fake client; never called against the real API here |
+| Docker sandbox | real, tested against a real container locally and in CI |
 | Live benchmark results | **not produced** (no API access in the build environment) |
 
 The committed 75% pass@1 is fixed by construction. It proves the harness works
@@ -50,7 +57,10 @@ and nothing about the agent's ability.
   header) is unverified against the real API.
 - Agent-written code runs on the host unless `--sandbox-image` is given (the
   Docker sandbox is tested against a real container, but is opt-in).
-- Tasks are small and mostly single-file; pass@1 from one sample is noisy.
+- Tasks are small and mostly single-file; pass@1 from one sample is noisy
+  (use `--samples` in live mode).
+- Mock input-token counts depend slightly on the Python and pytest version,
+  because they are estimated from tool output.
 - `wrong_file` assumes the reference fix's files are the only correct ones.
 
 ## Resume bullets (honest)
@@ -61,7 +71,9 @@ and nothing about the agent's ability.
   (output truncation and history summarisation), covered by over 100 tests.
 - Designed a SWE-bench-style evaluation harness over 20 buggy Python packages
   with hidden tests to detect overfitting, per-task isolation, JSONL
-  trajectories, pass@1, token and cost metrics, and a seven-way failure taxonomy.
+  trajectories, pass@1 and pass@k, token, cost and latency metrics, parallel
+  execution, an optional no-network Docker sandbox, and a seven-way failure
+  taxonomy.
 - Made the whole system run offline and deterministically with a scripted mock
   model and trajectory replay, and wired the mock benchmark into GitHub Actions
   CI as a regression gate.

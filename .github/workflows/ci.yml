@@ -25,8 +25,10 @@ jobs:
       - name: Benchmark (mock mode)
         # The scripted oracle is expected to pass exactly 15 of 20 tasks (75%).
         # A lower rate means the harness, tools or tasks regressed.
-        run: python -m mini_agent bench --provider mock --out /tmp/bench-ci --min-pass-rate 0.75 --workers 4 \
-          --compare-to bench/results/mock
+        # It also fails if the committed results in bench/results/mock are stale.
+        run: |
+          python -m mini_agent bench --provider mock --out /tmp/bench-ci \
+            --min-pass-rate 0.75 --workers 4 --compare-to bench/results/mock
 
   docker:
     runs-on: ubuntu-latest
