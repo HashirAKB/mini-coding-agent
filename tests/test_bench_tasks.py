@@ -42,3 +42,10 @@ def test_overfit_patches_pass_visible_but_fail_hidden(tmp_path: Path) -> None:
         apply_patch(Workspace(root), task.overfit_patch)
         assert run_suite(root, "tests").passed
         assert not run_suite(root, "hidden_tests", task).passed
+
+
+def test_tasks_dir_can_be_overridden(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    from mini_agent.tasks import default_tasks_dir
+
+    monkeypatch.setenv("MINI_AGENT_TASKS_DIR", str(tmp_path))
+    assert default_tasks_dir() == tmp_path

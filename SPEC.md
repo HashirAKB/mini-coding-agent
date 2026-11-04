@@ -143,3 +143,7 @@ runs both suites in the workspace.
   new live run nor scripted.
 - **Extra failure category `incorrect_fix`** (right file, tests still fail),
   so that every failed run gets exactly one label.
+- **Docker image not built in the build environment.** The local Docker daemon
+  could pull no base image (Docker Hub answered `429 Too Many Requests`). Per
+  the offline rule no other route was tried; instead CI has a `docker` job that
+  builds the image and runs a mock benchmark inside it.

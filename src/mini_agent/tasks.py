@@ -10,7 +10,16 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-TASKS_DIR = Path(__file__).resolve().parents[2] / "bench" / "tasks"
+
+def default_tasks_dir() -> Path:
+    """$MINI_AGENT_TASKS_DIR, else the source checkout's bench/tasks, else ./bench/tasks."""
+    if "MINI_AGENT_TASKS_DIR" in os.environ:
+        return Path(os.environ["MINI_AGENT_TASKS_DIR"])
+    checkout = Path(__file__).resolve().parents[2] / "bench" / "tasks"
+    return checkout if checkout.is_dir() else Path.cwd() / "bench" / "tasks"
+
+
+TASKS_DIR = default_tasks_dir()
 HIDDEN_DIR_NAME = "hidden_tests"
 EVAL_TIMEOUT_SECONDS = 120.0
 

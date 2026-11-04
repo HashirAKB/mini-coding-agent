@@ -9,7 +9,7 @@ commit is pushed.
 - [x] M3 Context management (estimate, truncation, summarisation)
 - [x] M4 20 benchmark tasks with visible + hidden tests and reference patches
 - [x] M5 Harness, metrics, failure taxonomy, strategies, committed mock results
-- [ ] M6 Trajectory viewer, README, LEARNING, ADRs, SUMMARY, final review
+- [x] M6 Trajectory viewer, README, LEARNING, ADRs, SUMMARY, final review
 
 ## Blockers
 

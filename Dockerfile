@@ -2,7 +2,7 @@
 # by pytest, so a container is the real security boundary (see SPEC.md).
 FROM python:3.11-slim
 
-ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 MINI_AGENT_TASKS_DIR=/app/bench/tasks
 WORKDIR /app
 
 COPY pyproject.toml README.md LICENSE ./
