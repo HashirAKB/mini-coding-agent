@@ -29,6 +29,7 @@ from mini_agent.providers.anthropic import DEFAULT_MODEL, AnthropicProvider
 from mini_agent.providers.base import Provider
 from mini_agent.providers.replay import ReplayProvider
 from mini_agent.providers.scripted import ScriptedProvider
+from mini_agent.sandbox import Sandbox
 from mini_agent.tasks import HIDDEN_DIR_NAME, Task, prepare_workspace, run_suite
 from mini_agent.tools import IGNORED_NAMES, ToolBox
 from mini_agent.trajectory import TrajectoryWriter, read_trajectory
@@ -213,6 +214,7 @@ def run_task(
     replay_dir: Path | None = None,
     sample: int = 1,
     samples: int = 1,
+    sandbox: Sandbox | None = None,
 ) -> TaskResult:
     name = trajectory_name(task, sample, samples)
     trajectory_path = out_dir / "trajectories" / strategy / name
@@ -222,12 +224,13 @@ def run_task(
         root = prepare_workspace(task, Path(tmp))
         started = time.perf_counter()
         with TrajectoryWriter(trajectory_path) as writer:
-            agent = Agent(provider, ToolBox(Workspace(root)), run_config, writer)
+            toolbox = ToolBox(Workspace(root), sandbox=sandbox)
+            agent = Agent(provider, toolbox, run_config, writer)
             result = agent.run(task.description)
             wall_seconds = time.perf_counter() - started
             diff, changed = workspace_diff(task.repo_dir, root)
-            visible = run_suite(root, "tests", task)
-            hidden = run_suite(root, HIDDEN_DIR_NAME, task)
+            visible = run_suite(root, "tests", task, sandbox)
+            hidden = run_suite(root, HIDDEN_DIR_NAME, task, sandbox)
             events = read_trajectory(trajectory_path)
             failure = classify_failure(
                 visible.passed,
@@ -408,6 +411,7 @@ def run_benchmark(
     replay_dir: Path | None = None,
     samples: int = 1,
     workers: int = 1,
+    sandbox: Sandbox | None = None,
 ) -> list[TaskResult]:
     jobs = [
         (task, strategy, sample)
@@ -418,7 +422,9 @@ def run_benchmark(
 
     def run(job: tuple[Task, str, int]) -> TaskResult:
         task, strategy, sample = job
-        return run_task(task, provider_name, strategy, out_dir, config, replay_dir, sample, samples)
+        return run_task(
+            task, provider_name, strategy, out_dir, config, replay_dir, sample, samples, sandbox
+        )
 
     # Threads are enough: the work is waiting on pytest subprocesses and model calls,
     # and every run has its own provider, temp workspace and trajectory file.

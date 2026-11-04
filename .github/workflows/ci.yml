@@ -36,3 +36,12 @@ jobs:
         run: docker build -t mini-agent .
       - name: Mock benchmark inside the container
         run: docker run --rm mini-agent bench --provider mock --tasks 01_,04_ --out /tmp/results
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Sandbox tests against the real image
+        run: |
+          pip install -e ".[dev]"
+          MINI_AGENT_SANDBOX_IMAGE=mini-agent python -m pytest -q tests/test_sandbox.py -rs
+          python -m mini_agent bench --sandbox-image mini-agent --tasks 01_,04_,07_ \
+            --strategy direct --out /tmp/sandboxed

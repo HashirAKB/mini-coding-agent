@@ -9,15 +9,13 @@ Every tool receives model-supplied arguments, so every tool:
 
 from __future__ import annotations
 
-import os
 import re
-import subprocess
-import sys
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
 from mini_agent.patch import apply_patch
+from mini_agent.sandbox import Sandbox, run_pytest
 from mini_agent.types import ToolCall, ToolError, ToolResult
 from mini_agent.workspace import Workspace
 
@@ -125,8 +123,10 @@ class ToolBox:
         test_timeout: float = 60.0,
         max_read_lines: int = 200,
         max_search_results: int = 50,
+        sandbox: Sandbox | None = None,
     ) -> None:
         self.workspace = workspace
+        self.sandbox = sandbox
         self.test_timeout = test_timeout
         self.max_read_lines = max_read_lines
         self.max_search_results = max_search_results
@@ -225,24 +225,13 @@ class ToolBox:
             raise ToolError(f"Patch rejected, no files were changed. {error}") from error
 
     def run_tests(self, path: str | None = None) -> str:
-        command = [sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider"]
-        if path is not None:
-            command.append(self.workspace.resolve(path).as_posix())
-        env = {**os.environ, "PYTHONDONTWRITEBYTECODE": "1"}
-        try:
-            completed = subprocess.run(
-                command,
-                cwd=self.workspace.root,
-                capture_output=True,
-                text=True,
-                timeout=self.test_timeout,
-                env=env,
-            )
-        except subprocess.TimeoutExpired as error:
+        target = None if path is None else self.workspace.relative(self.workspace.resolve(path))
+        completed = run_pytest(self.workspace.root, target, self.test_timeout, self.sandbox)
+        if completed is None:
             raise ToolError(
                 f"run_tests timed out after {self.test_timeout:.0f}s. "
                 "Look for infinite loops or blocking calls."
-            ) from error
+            )
         output = (completed.stdout + completed.stderr).strip()
         return f"exit code {completed.returncode}\n{output}"
 

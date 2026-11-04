@@ -178,6 +178,12 @@ Each has a longer write-up in [`docs/adr/`](docs/adr) and
 - **Time is split into model and tools.** Every step records how long the
   model call and the tool calls took, and results report averages per
   strategy, so a slow run can be attributed to API latency or to slow tests.
+- **Optional Docker sandbox for agent-written code.** With
+  `--sandbox-image IMAGE` every pytest run (the agent's `run_tests` and the
+  harness's scoring) happens in `docker run --rm --network none` with capped
+  memory and CPU and only the workspace mounted; a timed-out container is
+  killed by name. The project's own image works as the sandbox image. Off by
+  default because it needs Docker.
 - **Mock is the default provider everywhere.** Live runs need an explicit flag,
   so nobody spends money by accident.
 
@@ -185,8 +191,10 @@ Each has a longer write-up in [`docs/adr/`](docs/adr) and
 
 - Mock numbers measure the harness, not the agent. No live results are
   committed yet.
-- `run_tests` executes code the agent wrote. The path checks protect the file
-  tools only; real isolation needs the provided Docker image.
+- By default `run_tests` and the evaluation execute agent-written code on the
+  host. The path checks protect the file tools only; pass
+  `--sandbox-image mini-agent` (after `docker build -t mini-agent .`) to run
+  every test inside a container with no network.
 - The live provider is tested offline against a fake client; its request shape
   (thinking, effort, server-side fallback header) has not been verified against
   the real API in this repo.
@@ -197,9 +205,7 @@ Each has a longer write-up in [`docs/adr/`](docs/adr) and
 
 ## What I'd do next
 
-1. An optional Docker sandbox for `run_tests`, so agent-written code never runs
-   on the host.
-2. Run the live benchmark for both strategies and commit the results.
+1. Run the live benchmark for both strategies and commit the results.
 
 ## Project layout
 

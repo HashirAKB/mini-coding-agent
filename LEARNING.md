@@ -234,7 +234,10 @@ Every path goes through `Workspace.resolve`: join with the root, call
 `is_relative_to(root)`. Checking the resolved path is the key point; string
 checks for `..` miss symlinks. Tests cover `..`, absolute paths, `~` and a
 symlink pointing outside. I'm explicit that this only protects the file tools:
-`run_tests` executes model-written code, so real isolation is the Docker image.
+`run_tests` executes model-written code, so for real isolation `--sandbox-image`
+runs every pytest call in `docker run --network none` with memory and CPU caps
+(`sandbox.py`); on timeout the container is killed by name, since killing the
+docker client alone leaves it running.
 
 **3. What happens when the model sends a bad patch?**
 `patch.py` computes every change in memory first, so a failing hunk writes

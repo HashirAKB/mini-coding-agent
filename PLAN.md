@@ -21,7 +21,7 @@ commit is pushed.
 - [x] Optional model-written summaries with extractive fallback
 - [x] CI check that committed mock results are up to date
 - [x] Per-step timing: model latency vs tool time
-- [ ] Optional Docker sandbox for `run_tests`
+- [x] Optional Docker sandbox for `run_tests` (and for scoring)
 - [ ] Run the live benchmark and commit results (blocked, see below)
 
 ## Blockers

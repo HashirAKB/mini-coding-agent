@@ -148,7 +148,10 @@ runs both suites in the workspace.
   exhausted replay) used to crash the whole benchmark. It now ends only that
   run and is reported separately, so infrastructure failures are never counted
   as agent failures.
-- **Docker image not built in the build environment.** The local Docker daemon
-  could pull no base image (Docker Hub answered `429 Too Many Requests`). Per
-  the offline rule no other route was tried; instead CI has a `docker` job that
-  builds the image and runs a mock benchmark inside it.
+- **Docker image not built in the build environment.** At first the local
+  Docker daemon could pull no base image (Docker Hub answered `429 Too Many
+  Requests`); later the pull worked, but `pip install` inside the build cannot
+  verify this environment's TLS proxy. Per the offline rule no workaround was
+  attempted in the Dockerfile; CI's `docker` job builds the image, runs a mock
+  benchmark inside it and runs the sandbox tests against it. The sandbox itself
+  was verified locally with a throwaway image built from pre-downloaded wheels.

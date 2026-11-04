@@ -48,7 +48,8 @@ and nothing about the agent's ability.
 - No live run yet, so the strategy comparison has no real numbers.
 - The live request shape (adaptive thinking, effort, server-side fallback beta
   header) is unverified against the real API.
-- `run_tests` runs agent-written code on the host unless you use Docker.
+- Agent-written code runs on the host unless `--sandbox-image` is given (the
+  Docker sandbox is tested against a real container, but is opt-in).
 - Tasks are small and mostly single-file; pass@1 from one sample is noisy.
 - `wrong_file` assumes the reference fix's files are the only correct ones.
 

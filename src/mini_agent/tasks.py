@@ -5,10 +5,10 @@ from __future__ import annotations
 import json
 import os
 import shutil
-import subprocess
-import sys
 from dataclasses import dataclass
 from pathlib import Path
+
+from mini_agent.sandbox import Sandbox, run_pytest
 
 
 def default_tasks_dir() -> Path:
@@ -75,7 +75,9 @@ class SuiteResult:
     output: str
 
 
-def run_suite(root: Path, suite: str, task: Task | None = None) -> SuiteResult:
+def run_suite(
+    root: Path, suite: str, task: Task | None = None, sandbox: Sandbox | None = None
+) -> SuiteResult:
     """Run one test suite in `root`.
 
     For "tests" the original visible tests are restored first, so an agent
@@ -91,17 +93,7 @@ def run_suite(root: Path, suite: str, task: Task | None = None) -> SuiteResult:
     elif task is not None:
         shutil.rmtree(target, ignore_errors=True)
         shutil.copytree(task.repo_dir / suite, target)
-    command = [sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider", suite]
-    env = {**os.environ, "PYTHONDONTWRITEBYTECODE": "1"}
-    try:
-        completed = subprocess.run(
-            command,
-            cwd=root,
-            capture_output=True,
-            text=True,
-            timeout=EVAL_TIMEOUT_SECONDS,
-            env=env,
-        )
-    except subprocess.TimeoutExpired:
+    completed = run_pytest(root, suite, EVAL_TIMEOUT_SECONDS, sandbox)
+    if completed is None:
         return SuiteResult(False, f"timed out after {EVAL_TIMEOUT_SECONDS:.0f}s")
     return SuiteResult(completed.returncode == 0, completed.stdout + completed.stderr)

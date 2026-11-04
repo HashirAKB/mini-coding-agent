@@ -168,3 +168,17 @@ considered, why.
   comparison catches any behaviour change (steps, tokens, labels, config) and
   forces the committed numbers to be regenerated together with the change.
   Bots committing to main would blur authorship.
+
+## D18. Docker sandbox as an opt-in, shared by the tool and the evaluator
+- **Decision:** `sandbox.run_pytest` is the single place pytest is launched.
+  With a `DockerSandbox` it runs `docker run --rm --network none --memory 1g
+  --cpus 1 -v workspace:/work`, and on timeout it runs `docker kill` on the
+  container's unique name. Test paths are passed relative to the workspace so
+  they mean the same inside and outside the container.
+- **Alternatives:** sandbox only the agent's `run_tests`; run the whole
+  harness inside one container (already possible with the Dockerfile);
+  seccomp/nsjail.
+- **Why:** both the agent's test runs and the final scoring execute
+  agent-written code, so both need isolation. One helper removed duplicated
+  subprocess code. Opt-in because Docker is not available everywhere and the
+  mock benchmark only runs trusted reference patches.

@@ -17,6 +17,7 @@ from typing import Any
 
 from mini_agent.agent import AgentConfig
 from mini_agent.bench import MODES, compare_results, run_benchmark, run_task, summarise_results
+from mini_agent.sandbox import DockerSandbox
 from mini_agent.tasks import TASKS_DIR, Task, load_tasks
 from mini_agent.trajectory import read_trajectory
 from mini_agent.viewer import render_run, render_trajectory
@@ -120,6 +121,10 @@ def main(argv: list[str] | None = None) -> int:
             default=AgentConfig.summariser,
             help="how old turns are summarised near the context limit",
         )
+        command.add_argument(
+            "--sandbox-image",
+            help="run all tests inside this Docker image (no network); default: on the host",
+        )
     run.add_argument("--strategy", choices=["direct", "plan"], default="direct")
     bench.add_argument("--strategy", choices=["direct", "plan", "both"], default="both")
 
@@ -134,12 +139,13 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     config = AgentConfig(max_steps=args.max_steps, summariser=args.summariser)
+    sandbox = DockerSandbox(args.sandbox_image) if args.sandbox_image else None
     tasks = load_tasks(TASKS_DIR)
 
     if args.command in ("run", "demo"):
         [task] = _select(tasks, args.task)[:1]
         out = args.out or Path(tempfile.mkdtemp(prefix="mini-agent-"))
-        run_task(task, args.provider, args.strategy, out, config)
+        run_task(task, args.provider, args.strategy, out, config, sandbox=sandbox)
         path = out / "trajectories" / args.strategy / f"{task.id}.jsonl"
         print(format_trajectory(read_trajectory(path)))
         print(f"\ntrajectory: {path}")
@@ -157,6 +163,7 @@ def main(argv: list[str] | None = None) -> int:
         args.replay_dir,
         args.samples,
         args.workers,
+        sandbox,
     )
     print((args.out / "results.md").read_text())
     print(f"{len(results)} runs written to {args.out}")
