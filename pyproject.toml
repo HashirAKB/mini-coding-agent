@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mini-coding-agent"
+version = "0.1.0"
+description = "A from-scratch coding agent and a SWE-bench-style benchmark harness."
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Hashir Ahmed K B" }]
+requires-python = ">=3.11"
+# pytest is a runtime dependency: the run_tests tool and the benchmark
+# evaluation both execute pytest suites inside the task workspace.
+dependencies = ["pytest>=8"]
+
+[project.optional-dependencies]
+live = ["anthropic>=1.0"]
+dev = ["ruff>=0.6", "mypy>=1.10"]
+
+[project.scripts]
+mini-agent = "mini_agent.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+# Benchmark task repos contain deliberate bugs (that is the point).
+extend-exclude = ["bench/tasks"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+
+[tool.mypy]
+files = ["src"]
+strict = true
+
+[[tool.mypy.overrides]]
+module = ["anthropic", "anthropic.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-p no:cacheprovider"

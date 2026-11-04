@@ -3,7 +3,7 @@
 Tick each milestone when its success criterion (see SPEC.md) passes and the
 commit is pushed.
 
-- [ ] M0 Scaffold: pyproject, package skeleton, CI, Dockerfile, LICENSE, .env.example
+- [x] M0 Scaffold: pyproject, package skeleton, CI, Dockerfile, LICENSE, .env.example
 - [ ] M1 Workspace + tools + patch applier (path traversal and timeouts tested)
 - [ ] M2 Providers (scripted, replay, anthropic) + agent loop + stop conditions
 - [ ] M3 Context management (estimate, truncation, summarisation)
