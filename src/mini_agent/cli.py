@@ -18,6 +18,7 @@ from mini_agent.agent import AgentConfig
 from mini_agent.bench import run_benchmark, run_task
 from mini_agent.tasks import TASKS_DIR, Task, load_tasks
 from mini_agent.trajectory import read_trajectory
+from mini_agent.viewer import render_run, render_trajectory
 
 PROVIDERS = ["mock", "anthropic", "replay"]
 
@@ -98,6 +99,9 @@ def main(argv: list[str] | None = None) -> int:
         help="exit with status 1 if any strategy's pass@1 is below this (used by CI)",
     )
 
+    view = sub.add_parser("view", help="Render a run directory or one .jsonl file as HTML")
+    view.add_argument("path", type=Path)
+
     for command in (run, bench):
         command.add_argument("--provider", choices=PROVIDERS, default="mock")
         command.add_argument("--max-steps", type=int, default=AgentConfig.max_steps)
@@ -105,6 +109,15 @@ def main(argv: list[str] | None = None) -> int:
     bench.add_argument("--strategy", choices=["direct", "plan", "both"], default="both")
 
     args = parser.parse_args(argv)
+    if args.command == "view":
+        if args.path.suffix == ".jsonl":
+            page = args.path.with_suffix(".html")
+            page.write_text(render_trajectory(read_trajectory(args.path)))
+        else:
+            page = render_run(args.path)
+        print(f"wrote {page}")
+        return 0
+
     config = AgentConfig(max_steps=args.max_steps)
     tasks = load_tasks(TASKS_DIR)
 

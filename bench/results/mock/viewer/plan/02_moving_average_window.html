@@ -1,0 +1,73 @@
+<!doctype html><html lang='en'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'><title>02_moving_average_window (plan)</title><style>
+:root { --bg:#ffffff; --fg:#1b1f24; --muted:#59636e; --card:#f6f8fa; --border:#d1d9e0;
+  --add:#1a7f37; --add-bg:#dafbe1; --del:#cf222e; --del-bg:#ffebe9; --hunk:#8250df;
+  --error:#cf222e; --ok:#1a7f37; }
+@media (prefers-color-scheme: dark) { :root { --bg:#0d1117; --fg:#e6edf3; --muted:#9198a1;
+  --card:#151b23; --border:#3d444d; --add:#3fb950; --add-bg:#12261e; --del:#f85149;
+  --del-bg:#2d1214; --hunk:#ab7df8; --error:#f85149; --ok:#3fb950; } }
+* { box-sizing: border-box; }
+body { margin:0 auto; max-width:960px; padding:16px; background:var(--bg); color:var(--fg);
+  font:15px/1.5 system-ui, sans-serif; }
+h1 { font-size:1.4rem; } h2 { font-size:1.1rem; margin-top:2rem; }
+.step h2 { margin-top:0; }
+pre { background:var(--card); border:1px solid var(--border); border-radius:6px; padding:10px;
+  overflow-x:auto; font:13px/1.45 ui-monospace, monospace; white-space:pre; }
+.step { border:1px solid var(--border); border-radius:8px; padding:12px; margin:12px 0; }
+.meta { color:var(--muted); font-size:0.85rem; }
+.thought { font-style:italic; }
+.obs.error { border-color:var(--error); }
+.badge { display:inline-block; padding:1px 8px; border-radius:10px; font-size:0.8rem;
+  border:1px solid currentColor; }
+.pass { color:var(--ok); } .fail { color:var(--error); }
+.add { color:var(--add); background:var(--add-bg); display:block; }
+.del { color:var(--del); background:var(--del-bg); display:block; }
+.hunk { color:var(--hunk); display:block; }
+.note { border-left:3px solid var(--hunk); padding:4px 10px; color:var(--muted); }
+table { border-collapse:collapse; width:100%; font-size:0.9rem; }
+th, td { border-bottom:1px solid var(--border); padding:6px; text-align:left; }
+.table-wrap { overflow-x:auto; }
+a { color:var(--hunk); }
+</style></head><body><h1>02_moving_average_window (plan)</h1><p class='meta'>provider scripted, model scripted-oracle, strategy plan</p><h2>Task</h2><pre>Fix this issue in the repository:
+
+`series.moving_average(values, window)` should return the mean of every full
+window of consecutive values, but the result is always one element short.
+If the window is longer than the data there are no full windows.</pre><section class='step'><h2>Step 1</h2><p class='meta'>context estimate 730 tokens; usage in/out 730/30</p><p class='thought'>Plan:
+1. Explore the package.
+2. Run the tests to reproduce.
+3. Patch the root cause.
+4. Re-run the tests and finish.</p></section><section class='step'><h2>Step 2</h2><p class='meta'>context estimate 780 tokens; usage in/out 780/15</p><p class='thought'>Let me see what is in the repository.</p><p><strong>list_dir</strong> {&quot;path&quot;: &quot;.&quot;}</p><pre class="obs">series/
+tests/</pre></section><section class='step'><h2>Step 3</h2><p class='meta'>context estimate 808 tokens; usage in/out 808/19</p><p class='thought'>Reading the code that looks relevant.</p><p><strong>read_file</strong> {&quot;path&quot;: &quot;series/stats.py&quot;}</p><pre class="obs">series/stats.py (lines 1-3 of 3)
+   1 | def moving_average(values, window):
+   2 |     &quot;&quot;&quot;Mean of each full window of `window` consecutive values.&quot;&quot;&quot;
+   3 |     return [sum(values[i : i + window]) / window for i in range(len(values) - window)]</pre></section><section class='step'><h2>Step 4</h2><p class='meta'>context estimate 896 tokens; usage in/out 896/13</p><p class='thought'>Running the tests to reproduce the bug.</p><p><strong>run_tests</strong> {}</p><pre class="obs">exit code 1
+F                                                                        [100%]
+=================================== FAILURES ===================================
+______________________________ test_window_of_two ______________________________
+
+    def test_window_of_two():
+&gt;       assert moving_average([1, 2, 3, 4], 2) == [1.5, 2.5, 3.5]
+E       assert [1.5, 2.5] == [1.5, 2.5, 3.5]
+E         
+E         Right contains one more item: 3.5
+E         Use -v to get more diff
+
+tests/test_stats.py:5: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_stats.py::test_window_of_two - assert [1.5, 2.5] == [1.5, 2...
+1 failed in 0.02s</pre></section><section class='step'><h2>Step 5</h2><p class='meta'>context estimate 1,093 tokens; usage in/out 1,093/102</p><p class='thought'>I see the bug; applying a fix.</p><p><strong>apply_patch</strong> {}</p><pre><strong>--- a/series/stats.py</strong>
+<strong>+++ b/series/stats.py</strong>
+<span class="hunk">@@ -1,3 +1,3 @@</span>
+ def moving_average(values, window):
+     &quot;&quot;&quot;Mean of each full window of `window` consecutive values.&quot;&quot;&quot;
+<span class="del">-    return [sum(values[i : i + window]) / window for i in range(len(values) - window)]</span>
+<span class="add">+    return [sum(values[i : i + window]) / window for i in range(len(values) - window + 1)]</span></pre><pre class="obs">Patch applied: modified series/stats.py (+1 -1)</pre></section><section class='step'><h2>Step 6</h2><p class='meta'>context estimate 1,217 tokens; usage in/out 1,217/8</p><p class='thought'>Re-running the tests.</p><p><strong>run_tests</strong> {}</p><pre class="obs">exit code 0
+.                                                                        [100%]
+1 passed in 0.01s</pre></section><section class='step'><h2>Step 7</h2><p class='meta'>context estimate 1,262 tokens; usage in/out 1,262/21</p><p class='thought'>Wrapping up.</p><p><strong>finish</strong> {&quot;status&quot;: &quot;done&quot;, &quot;summary&quot;: &quot;Fixed the bug; all tests pass.&quot;}</p><pre class="obs">Finished with status &#x27;done&#x27;.</pre></section><h2>Stop</h2><p>finished after 7 steps (done)</p><h2>Evaluation <span class="badge pass">pass</span></h2><p>visible tests: pass, hidden tests: pass</p><h2>Final diff</h2><pre><strong>--- a/series/stats.py</strong>
+<strong>+++ b/series/stats.py</strong>
+<span class="hunk">@@ -1,3 +1,3 @@</span>
+ def moving_average(values, window):
+     &quot;&quot;&quot;Mean of each full window of `window` consecutive values.&quot;&quot;&quot;
+<span class="del">-    return [sum(values[i : i + window]) / window for i in range(len(values) - window)]</span>
+<span class="add">+    return [sum(values[i : i + window]) / window for i in range(len(values) - window + 1)]</span></pre><h2>Hidden test output</h2><pre>...                                                                      [100%]
+3 passed in 0.01s
+</pre></body></html>

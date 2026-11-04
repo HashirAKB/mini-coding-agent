@@ -45,3 +45,12 @@ def test_replay_provider_reproduces_a_recorded_bench(tmp_path: Path) -> None:
     )
     report = (replayed / "results.md").read_text()
     assert "REPLAY MODE" in report and "2/2" in report
+
+
+def test_view_renders_a_run(tmp_path: Path) -> None:
+    assert main(["bench", "--tasks", "01_", "--strategy", "direct", "--out", str(tmp_path)]) == 0
+    assert main(["view", str(tmp_path)]) == 0
+    assert (tmp_path / "viewer" / "direct" / "01_pagination_off_by_one.html").is_file()
+    jsonl = tmp_path / "trajectories" / "direct" / "01_pagination_off_by_one.jsonl"
+    assert main(["view", str(jsonl)]) == 0
+    assert jsonl.with_suffix(".html").is_file()

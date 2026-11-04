@@ -1,0 +1,66 @@
+<!doctype html><html lang='en'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'><title>08_celsius_integer_division (direct)</title><style>
+:root { --bg:#ffffff; --fg:#1b1f24; --muted:#59636e; --card:#f6f8fa; --border:#d1d9e0;
+  --add:#1a7f37; --add-bg:#dafbe1; --del:#cf222e; --del-bg:#ffebe9; --hunk:#8250df;
+  --error:#cf222e; --ok:#1a7f37; }
+@media (prefers-color-scheme: dark) { :root { --bg:#0d1117; --fg:#e6edf3; --muted:#9198a1;
+  --card:#151b23; --border:#3d444d; --add:#3fb950; --add-bg:#12261e; --del:#f85149;
+  --del-bg:#2d1214; --hunk:#ab7df8; --error:#f85149; --ok:#3fb950; } }
+* { box-sizing: border-box; }
+body { margin:0 auto; max-width:960px; padding:16px; background:var(--bg); color:var(--fg);
+  font:15px/1.5 system-ui, sans-serif; }
+h1 { font-size:1.4rem; } h2 { font-size:1.1rem; margin-top:2rem; }
+.step h2 { margin-top:0; }
+pre { background:var(--card); border:1px solid var(--border); border-radius:6px; padding:10px;
+  overflow-x:auto; font:13px/1.45 ui-monospace, monospace; white-space:pre; }
+.step { border:1px solid var(--border); border-radius:8px; padding:12px; margin:12px 0; }
+.meta { color:var(--muted); font-size:0.85rem; }
+.thought { font-style:italic; }
+.obs.error { border-color:var(--error); }
+.badge { display:inline-block; padding:1px 8px; border-radius:10px; font-size:0.8rem;
+  border:1px solid currentColor; }
+.pass { color:var(--ok); } .fail { color:var(--error); }
+.add { color:var(--add); background:var(--add-bg); display:block; }
+.del { color:var(--del); background:var(--del-bg); display:block; }
+.hunk { color:var(--hunk); display:block; }
+.note { border-left:3px solid var(--hunk); padding:4px 10px; color:var(--muted); }
+table { border-collapse:collapse; width:100%; font-size:0.9rem; }
+th, td { border-bottom:1px solid var(--border); padding:6px; text-align:left; }
+.table-wrap { overflow-x:auto; }
+a { color:var(--hunk); }
+</style></head><body><h1>08_celsius_integer_division (direct)</h1><p class='meta'>provider scripted, model scripted-oracle, strategy direct</p><h2>Task</h2><pre>Fix this issue in the repository:
+
+`units.to_fahrenheit(celsius)` returns whole numbers only: body temperature
+37 C comes out as 98 F instead of 98.6 F.</pre><section class='step'><h2>Step 1</h2><p class='meta'>context estimate 658 tokens; usage in/out 658/15</p><p class='thought'>Let me see what is in the repository.</p><p><strong>list_dir</strong> {&quot;path&quot;: &quot;.&quot;}</p><pre class="obs">tests/
+units/</pre></section><section class='step'><h2>Step 2</h2><p class='meta'>context estimate 686 tokens; usage in/out 686/20</p><p class='thought'>Reading the code that looks relevant.</p><p><strong>read_file</strong> {&quot;path&quot;: &quot;units/temperature.py&quot;}</p><pre class="obs">units/temperature.py (lines 1-2 of 2)
+   1 | def to_fahrenheit(celsius):
+   2 |     return celsius * 9 // 5 + 32</pre></section><section class='step'><h2>Step 3</h2><p class='meta'>context estimate 743 tokens; usage in/out 743/13</p><p class='thought'>Running the tests to reproduce the bug.</p><p><strong>run_tests</strong> {}</p><pre class="obs">exit code 1
+F                                                                        [100%]
+=================================== FAILURES ===================================
+____________________________ test_body_temperature _____________________________
+
+    def test_body_temperature():
+&gt;       assert to_fahrenheit(37) == pytest.approx(98.6)
+E       assert 98 == 98.6 ± 9.9e-05
+E         
+E         comparison failed
+E         Obtained: 98
+E         Expected: 98.6 ± 9.9e-05
+
+tests/test_temperature.py:7: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_temperature.py::test_body_temperature - assert 98 == 98.6 ±...
+1 failed in 0.03s</pre></section><section class='step'><h2>Step 4</h2><p class='meta'>context estimate 940 tokens; usage in/out 940/57</p><p class='thought'>I see the bug; applying a fix.</p><p><strong>apply_patch</strong> {}</p><pre><strong>--- a/units/temperature.py</strong>
+<strong>+++ b/units/temperature.py</strong>
+<span class="hunk">@@ -1,2 +1,2 @@</span>
+ def to_fahrenheit(celsius):
+<span class="del">-    return celsius * 9 // 5 + 32</span>
+<span class="add">+    return celsius * 9 / 5 + 32</span></pre><pre class="obs">Patch applied: modified units/temperature.py (+1 -1)</pre></section><section class='step'><h2>Step 5</h2><p class='meta'>context estimate 1,018 tokens; usage in/out 1,018/8</p><p class='thought'>Re-running the tests.</p><p><strong>run_tests</strong> {}</p><pre class="obs">exit code 0
+.                                                                        [100%]
+1 passed in 0.01s</pre></section><section class='step'><h2>Step 6</h2><p class='meta'>context estimate 1,063 tokens; usage in/out 1,063/21</p><p class='thought'>Wrapping up.</p><p><strong>finish</strong> {&quot;status&quot;: &quot;done&quot;, &quot;summary&quot;: &quot;Fixed the bug; all tests pass.&quot;}</p><pre class="obs">Finished with status &#x27;done&#x27;.</pre></section><h2>Stop</h2><p>finished after 6 steps (done)</p><h2>Evaluation <span class="badge pass">pass</span></h2><p>visible tests: pass, hidden tests: pass</p><h2>Final diff</h2><pre><strong>--- a/units/temperature.py</strong>
+<strong>+++ b/units/temperature.py</strong>
+<span class="hunk">@@ -1,2 +1,2 @@</span>
+ def to_fahrenheit(celsius):
+<span class="del">-    return celsius * 9 // 5 + 32</span>
+<span class="add">+    return celsius * 9 / 5 + 32</span></pre><h2>Hidden test output</h2><pre>...                                                                      [100%]
+3 passed in 0.01s
+</pre></body></html>
