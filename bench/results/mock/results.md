@@ -6,8 +6,8 @@
 
 | strategy | pass@1 | pass@k | avg steps | total tokens | avg tokens | cost (USD) | avg wall (s) |
 |---|---|---|---|---|---|---|---|
-| direct | 15/20 (75%) | pass@1 75% | 7.3 | 167,604 | 8,380 | 0.73 | 0.76 |
-| plan | 15/20 (75%) | pass@1 75% | 8.2 | 193,831 | 9,692 | 0.84 | 0.76 |
+| direct | 15/20 (75%) | pass@1 75% | 7.3 | 167,604 | 8,380 | 0.73 | 0.67 |
+| plan | 15/20 (75%) | pass@1 75% | 8.2 | 193,831 | 9,692 | 0.84 | 0.67 |
 
 ## Failure taxonomy
 

@@ -171,6 +171,10 @@ Each has a longer write-up in [`docs/adr/`](docs/adr) and
   towards the budget, and if the call fails or returns nothing the rule-based
   digest is used instead, so summarisation can never break a run. Replay
   reproduces recorded summaries too.
+- **Committed results are checked in CI.** `bench --compare-to bench/results/mock`
+  reruns the mock benchmark and fails if anything other than wall time differs
+  from the committed `results.json`, so the numbers in this README cannot go
+  stale silently.
 - **Mock is the default provider everywhere.** Live runs need an explicit flag,
   so nobody spends money by accident.
 
@@ -190,7 +194,10 @@ Each has a longer write-up in [`docs/adr/`](docs/adr) and
 
 ## What I'd do next
 
-1. Run the live benchmark for both strategies and commit the results.
+1. Per-step timing that separates model latency from tool time.
+2. An optional Docker sandbox for `run_tests`, so agent-written code never runs
+   on the host.
+3. Run the live benchmark for both strategies and commit the results.
 
 ## Project layout
 

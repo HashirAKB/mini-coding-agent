@@ -157,3 +157,14 @@ considered, why.
   system prompt and tools stable. The fallback keeps summarisation from ever
   being a new way for a run to fail. Server-side compaction is tied to one
   vendor and cannot be exercised offline.
+
+## D17. CI compares a fresh mock run with the committed results
+- **Decision:** `bench --compare-to DIR` diffs the new `results.json` against
+  `DIR/results.json`, ignoring `wall_seconds` and `avg_wall_seconds`, and exits
+  1 on any difference. CI runs it against `bench/results/mock`.
+- **Alternatives:** regenerate results in CI and commit them automatically;
+  compare only pass@1.
+- **Why:** mock runs are deterministic apart from timing, so an exact
+  comparison catches any behaviour change (steps, tokens, labels, config) and
+  forces the committed numbers to be regenerated together with the change.
+  Bots committing to main would blur authorship.

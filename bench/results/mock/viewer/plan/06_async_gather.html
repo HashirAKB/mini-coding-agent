@@ -49,9 +49,9 @@ _________________________ test_results_not_coroutines __________________________
 
     def test_results_not_coroutines():
 &gt;       assert asyncio.run(fetch_all([&quot;a&quot;, &quot;b&quot;], upper)) == [&quot;A&quot;, &quot;B&quot;]
-E       AssertionError: assert [&lt;coroutine o...7f0f937eb580&gt;] == [&#x27;A&#x27;, &#x27;B&#x27;]
+E       AssertionError: assert [&lt;coroutine o...7f631a77f580&gt;] == [&#x27;A&#x27;, &#x27;B&#x27;]
 E         
-E         At index 0 diff: &lt;coroutine object upper at 0x7f0f937eab00&gt; != &#x27;A&#x27;
+E         At index 0 diff: &lt;coroutine object upper at 0x7f631a77eb00&gt; != &#x27;A&#x27;
 E         Use -v to get more diff
 
 tests/test_client.py:11: AssertionError

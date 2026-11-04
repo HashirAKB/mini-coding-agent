@@ -52,7 +52,7 @@ E         ?      +++
 tests/test_shorten.py:5: AssertionError
 =========================== short test summary info ============================
 FAILED tests/test_shorten.py::test_shortened_text_fits - AssertionError: asse...
-1 failed in 0.02s</pre></section><section class='step'><h2>Step 4</h2><p class='meta'>context estimate 979 tokens; usage in/out 979/72</p><p class='thought'>I see the bug; applying a fix.</p><p><strong>apply_patch</strong> {}</p><pre><strong>--- a/textutil/shorten.py</strong>
+1 failed in 0.01s</pre></section><section class='step'><h2>Step 4</h2><p class='meta'>context estimate 979 tokens; usage in/out 979/72</p><p class='thought'>I see the bug; applying a fix.</p><p><strong>apply_patch</strong> {}</p><pre><strong>--- a/textutil/shorten.py</strong>
 <strong>+++ b/textutil/shorten.py</strong>
 <span class="hunk">@@ -1,4 +1,4 @@</span>
  def truncate(text, max_len):

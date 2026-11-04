@@ -45,9 +45,9 @@ _________________________ test_results_not_coroutines __________________________
 
     def test_results_not_coroutines():
 &gt;       assert asyncio.run(fetch_all([&quot;a&quot;, &quot;b&quot;], upper)) == [&quot;A&quot;, &quot;B&quot;]
-E       AssertionError: assert [&lt;coroutine o...7ff24919b580&gt;] == [&#x27;A&#x27;, &#x27;B&#x27;]
+E       AssertionError: assert [&lt;coroutine o...7f95e9fe3580&gt;] == [&#x27;A&#x27;, &#x27;B&#x27;]
 E         
-E         At index 0 diff: &lt;coroutine object upper at 0x7ff24919ab00&gt; != &#x27;A&#x27;
+E         At index 0 diff: &lt;coroutine object upper at 0x7f95e9fe2b00&gt; != &#x27;A&#x27;
 E         Use -v to get more diff
 
 tests/test_client.py:11: AssertionError
@@ -71,5 +71,5 @@ FAILED tests/test_client.py::test_results_not_coroutines - AssertionError: as...
      &quot;&quot;&quot;Fetch every URL concurrently; results are in the same order as `urls`.&quot;&quot;&quot;
 <span class="del">-    return [fetch(url) for url in urls]</span>
 <span class="add">+    return list(await asyncio.gather(*(fetch(url) for url in urls)))</span></pre><h2>Hidden test output</h2><pre>...                                                                      [100%]
-3 passed in 0.42s
+3 passed in 0.41s
 </pre></body></html>

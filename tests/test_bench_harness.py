@@ -177,3 +177,45 @@ def test_parallel_workers_give_the_same_results_in_the_same_order(tmp_path: Path
         return (r.task_id, r.sample, r.passed, r.failure, r.steps, r.input_tokens)  # type: ignore[attr-defined]
 
     assert [key(r) for r in parallel] == [key(r) for r in serial]
+
+
+def test_compare_results_ignores_wall_time_only() -> None:
+    from mini_agent.bench import compare_results
+
+    expected = {
+        "mode": "mock",
+        "strategies": {"direct": {"pass_at_1": 0.75, "avg_wall_seconds": 0.7}},
+        "results": [{"task_id": "a", "passed": True, "wall_seconds": 0.5}],
+    }
+    same_but_slower = {
+        "mode": "mock",
+        "strategies": {"direct": {"pass_at_1": 0.75, "avg_wall_seconds": 9.9}},
+        "results": [{"task_id": "a", "passed": True, "wall_seconds": 3.0}],
+    }
+    assert compare_results(expected, same_but_slower) == []
+    regressed = {
+        "mode": "mock",
+        "strategies": {"direct": {"pass_at_1": 0.70, "avg_wall_seconds": 0.7}},
+        "results": [{"task_id": "a", "passed": False, "wall_seconds": 0.5}],
+    }
+    differences = compare_results(expected, regressed)
+    assert "strategies.direct.pass_at_1: expected 0.75, got 0.7" in differences
+    assert "results.0.passed: expected True, got False" in differences
+
+
+def test_committed_mock_results_match_a_fresh_run_on_a_sample(tmp_path: Path) -> None:
+    """Spot-check two tasks against the committed results (CI checks all of them)."""
+    from mini_agent.bench import compare_results
+
+    committed = json.loads(
+        (Path(__file__).parents[1] / "bench/results/mock/results.json").read_text()
+    )
+    tasks = [t for t in load_tasks(TASKS_DIR) if t.id[:2] in {"03", "10"}]
+    run_benchmark(tasks, "mock", ["direct"], tmp_path, AgentConfig())
+    fresh = json.loads((tmp_path / "results.json").read_text())
+    wanted = [
+        r
+        for r in committed["results"]
+        if r["strategy"] == "direct" and r["task_id"][:2] in {"03", "10"}
+    ]
+    assert compare_results({"results": wanted}, {"results": fresh["results"]}) == []

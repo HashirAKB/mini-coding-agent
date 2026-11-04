@@ -353,6 +353,38 @@ def render_markdown(
     return "\n".join(lines) + "\n"
 
 
+TIMING_KEYS = {"wall_seconds", "avg_wall_seconds"}
+
+
+def compare_results(expected: Any, actual: Any, path: str = "") -> list[str]:
+    """Differences between two results.json payloads, ignoring wall-clock timings.
+
+    Used by CI to check that the committed mock results still match a fresh
+    run: everything in mock mode is deterministic except how long it took.
+    """
+    if isinstance(expected, dict) and isinstance(actual, dict):
+        differences = []
+        for key in sorted(expected.keys() | actual.keys()):
+            if key in TIMING_KEYS:
+                continue
+            child = f"{path}.{key}" if path else str(key)
+            if key not in actual or key not in expected:
+                differences.append(f"{child}: present in only one of the two")
+            else:
+                differences += compare_results(expected[key], actual[key], child)
+        return differences
+    if isinstance(expected, list) and isinstance(actual, list):
+        if len(expected) != len(actual):
+            return [f"{path}: expected {len(expected)} items, got {len(actual)}"]
+        differences = []
+        for i, (left, right) in enumerate(zip(expected, actual, strict=True)):
+            differences += compare_results(left, right, f"{path}.{i}")
+        return differences
+    if expected != actual:
+        return [f"{path}: expected {expected!r}, got {actual!r}"]
+    return []
+
+
 def run_benchmark(
     tasks: list[Task],
     provider_name: str,

@@ -10,7 +10,23 @@ commit is pushed.
 - [x] M4 20 benchmark tasks with visible + hidden tests and reference patches
 - [x] M5 Harness, metrics, failure taxonomy, strategies, committed mock results
 - [x] M6 Trajectory viewer, README, LEARNING, ADRs, SUMMARY, final review
+- [x] Senior-reviewer pass (read every file, fixed bugs, re-ran everything)
+
+## Follow-up items ("What I'd do next")
+
+- [x] Prompt caching in the live provider, cache tokens priced separately
+- [x] Retries and timeout for the live provider (delegated to the SDK)
+- [x] pass@k with repeated samples and the unbiased estimator
+- [x] Parallel task execution (`--workers`)
+- [x] Optional model-written summaries with extractive fallback
+- [x] CI check that committed mock results are up to date
+- [ ] Per-step timing: model latency vs tool time
+- [ ] Optional Docker sandbox for `run_tests`
+- [ ] Run the live benchmark and commit results (blocked, see below)
 
 ## Blockers
 
-None yet.
+- **Live benchmark run:** needs `ANTHROPIC_API_KEY` and network access to the
+  API, neither of which exists in the build environment. Everything needed is
+  in place: `python -m mini_agent bench --provider anthropic --workers 4`
+  writes `bench/results/live/` (labelled LIVE).

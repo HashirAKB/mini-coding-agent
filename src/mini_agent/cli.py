@@ -9,13 +9,14 @@ python -m mini_agent bench --provider anthropic --out bench/results/live
 from __future__ import annotations
 
 import argparse
+import json
 import tempfile
 import textwrap
 from pathlib import Path
 from typing import Any
 
 from mini_agent.agent import AgentConfig
-from mini_agent.bench import MODES, run_benchmark, run_task, summarise_results
+from mini_agent.bench import MODES, compare_results, run_benchmark, run_task, summarise_results
 from mini_agent.tasks import TASKS_DIR, Task, load_tasks
 from mini_agent.trajectory import read_trajectory
 from mini_agent.viewer import render_run, render_trajectory
@@ -95,6 +96,11 @@ def main(argv: list[str] | None = None) -> int:
     bench.add_argument("--samples", type=int, default=1, help="runs per task, for pass@k")
     bench.add_argument("--workers", type=int, default=1, help="tasks to run in parallel")
     bench.add_argument(
+        "--compare-to",
+        type=Path,
+        help="exit with status 1 if results differ from this run directory (timings ignored)",
+    )
+    bench.add_argument(
         "--min-pass-rate",
         type=float,
         default=0.0,
@@ -159,4 +165,12 @@ def main(argv: list[str] | None = None) -> int:
     if below:
         print(f"pass@1 below {args.min_pass_rate:.0%}: {below}")
         return 1
+    if args.compare_to:
+        expected = json.loads((args.compare_to / "results.json").read_text())
+        actual = json.loads((args.out / "results.json").read_text())
+        differences = compare_results(expected, actual)
+        for difference in differences[:20]:
+            print(f"differs from {args.compare_to}: {difference}")
+        if differences:
+            return 1
     return 0
