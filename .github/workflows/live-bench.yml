@@ -1,0 +1,111 @@
+name: live-bench
+
+# Runs the benchmark with the live Anthropic provider and commits
+# bench/results/live/ (results, trajectories and the HTML viewer).
+# Manual only, because every run costs money. Needs the ANTHROPIC_API_KEY
+# repository secret.
+#
+# Agent-written code is tested inside the project's Docker image with no
+# network, so it never runs next to the API key on the runner.
+on:
+  workflow_dispatch:
+    inputs:
+      strategy:
+        description: Agent strategy
+        type: choice
+        options: [direct, plan, both]
+        default: direct
+      tasks:
+        description: Task ids or prefixes, comma-separated (empty = all 20). Try "01_" for a cheap smoke run
+        required: false
+        default: ""
+      samples:
+        description: Runs per task (for pass@k)
+        required: true
+        default: "1"
+      model:
+        description: Model id (costs are priced as claude-opus-5-5)
+        required: true
+        default: claude-opus-5-5
+      commit_results:
+        description: Commit bench/results/live back to main
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: live-bench
+  cancel-in-progress: false
+
+jobs:
+  live-bench:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      MINI_AGENT_MODEL: ${{ inputs.model }}
+      STRATEGY: ${{ inputs.strategy }}
+      TASKS: ${{ inputs.tasks }}
+      SAMPLES: ${{ inputs.samples }}
+    steps:
+      - name: Check the API key secret
+        run: |
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "::error::Add an ANTHROPIC_API_KEY repository secret first (Settings > Secrets and variables > Actions)."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install
+        run: pip install -e ".[dev,live]"
+
+      - name: Build the test sandbox image
+        run: docker build -t mini-agent .
+
+      - name: Run the benchmark against the live model
+        run: |
+          args=(--provider anthropic --out bench/results/live --strategy "$STRATEGY"
+                --samples "$SAMPLES" --workers 4 --sandbox-image mini-agent)
+          if [ -n "$TASKS" ]; then args+=(--tasks "$TASKS"); fi
+          python -m mini_agent bench "${args[@]}"
+
+      - name: Render the trajectory viewer
+        if: always()
+        run: |
+          if [ -f bench/results/live/results.json ]; then
+            python -m mini_agent view bench/results/live
+          fi
+
+      - name: Job summary
+        if: always()
+        run: |
+          if [ -f bench/results/live/results.md ]; then
+            cat bench/results/live/results.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: live-bench-results
+          path: bench/results/live/
+          if-no-files-found: ignore
+
+      - name: Commit results
+        if: inputs.commit_results
+        run: |
+          git config user.name "Hashir Ahmed K B"
+          git config user.email "20386725+HashirAKB@users.noreply.github.com"
+          git add bench/results/live
+          if git diff --cached --quiet; then
+            echo "No result changes to commit."
+            exit 0
+          fi
+          git commit -m "Live benchmark results ($MINI_AGENT_MODEL, $STRATEGY)"
+          git pull --rebase
+          git push
